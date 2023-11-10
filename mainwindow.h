@@ -19,9 +19,14 @@ public:
 private slots:
     void on_pushButton_connectCom_clicked();
 
+    void on_pushButton_refreshComList_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
     SerialPortHandler m_serialPortReader;
+
+public slots:
+    void handleLidarData(int dist, int amp);
 };
 #endif // MAINWINDOW_H

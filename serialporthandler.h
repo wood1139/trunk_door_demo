@@ -53,6 +53,7 @@
 
 #include <QByteArray>
 #include <QSerialPort>
+#include <QStringList>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +66,12 @@ class SerialPortHandler : public QObject
 public:
     explicit SerialPortHandler(QObject *parent = nullptr);
     bool connectCom(QString portName, int baudrate);
+    void disconnectCom();
+    QStringList scanComList();
+    bool isConnected();
 
+private:
+    uint8_t calSum(QByteArray data);
 private slots:
     void handleReadyRead();
     void handleError(QSerialPort::SerialPortError error);
@@ -73,6 +79,9 @@ private slots:
 private:
     QSerialPort m_serialPort;
     QByteArray m_readData;
+
+signals:
+    void sigLidarData(int dist, int amp);
 };
 
 #endif // SERIALPORTHANDLER_H

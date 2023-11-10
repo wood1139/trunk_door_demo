@@ -14,18 +14,41 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton_connectCom">
+   <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>60</y>
-      <width>93</width>
-      <height>28</height>
+      <x>40</x>
+      <y>40</y>
+      <width>401</width>
+      <height>80</height>
      </rect>
     </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="pushButton_refreshComList">
+       <property name="text">
+        <string>更新串口</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox_comList"/>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_baudrate">
+       <property name="text">
+        <string>460800</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_connectCom">
+       <property name="text">
+        <string>连接</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
