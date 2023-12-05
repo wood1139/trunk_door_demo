@@ -9,6 +9,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+#define DATA_WIN_SIZE 20
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -25,10 +27,20 @@ private slots:
     void on_pushButton_test_clicked();
 
 private:
+    bool isDataStable(int &meanDist);
+    void updateState();
+private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
     SerialPortHandler m_serialPortReader;
     QTimer m_timer;
+    int  m_groundDist;
+    bool m_keyIsOn;
+    bool m_doorIsOpen;
+    bool m_groundIsFound;
+    bool m_dataIsStable;
+    int  m_distArr[DATA_WIN_SIZE];
+    int  m_distArrIdx;
 
 public slots:
     void handleLidarData(int dist, int amp);

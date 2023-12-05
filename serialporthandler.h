@@ -72,6 +72,7 @@ public:
 
 private:
     uint8_t calSum(QByteArray data);
+
 private slots:
     void handleReadyRead();
     void handleError(QSerialPort::SerialPortError error);

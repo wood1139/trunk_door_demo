@@ -139,7 +139,6 @@ void SerialPortHandler::handleReadyRead()
 {
     m_readData.append(m_serialPort.readAll());
 
-//    qDebug() << m_readData.toHex();
     while(m_readData.size()>=9)
     {
         if(uint8_t(m_readData[0])==0xAA && uint8_t(m_readData[1])==0x55 && uint8_t(m_readData[2])==0x60 && uint8_t(m_readData[3])==0x04)
