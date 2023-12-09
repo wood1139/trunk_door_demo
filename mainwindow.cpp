@@ -65,9 +65,10 @@ void MainWindow::on_pushButton_refreshComList_clicked()
 void MainWindow::slotSwitchImg()
 {
     static int cnt = 0;
-    if(cnt < 8)
+    if(cnt < 10)
     {
-        showImg(cnt++ % 2);
+        cnt++;
+        showImg(cnt % 2);
     }
     else
     {
@@ -91,10 +92,12 @@ void MainWindow::showImg(int idx)
 
 void MainWindow::handleLidarData(int dist, int amp)
 {
-    m_distArr[m_distArrIdx++] = dist;
-    m_distArrIdx %= DATA_WIN_SIZE;
-    updateState();
+//    m_distArr[m_distArrIdx++] = dist;
+//    m_distArrIdx %= DATA_WIN_SIZE;
+//    updateState();
     // qDebug() << "dist =" << dist << "amp =" << amp;
+    m_timer.start();
+    showImg(0);
 }
 
 void MainWindow::on_pushButton_test_clicked()
