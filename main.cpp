@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     // 加载 QSS 样式表
-    QFile styleFile("D:/projects/trunk_door_demo/trunk_door_demo/qss/Aqua.qss");
+    QFile styleFile("qss/Aqua.qss");
     if (styleFile.open(QFile::ReadOnly | QFile::Text)) {
         QTextStream styleStream(&styleFile);
         a.setStyleSheet(styleStream.readAll());

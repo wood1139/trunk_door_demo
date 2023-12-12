@@ -80,9 +80,9 @@ void MainWindow::slotSwitchImg()
 }
 void MainWindow::showImg(int idx)
 {
-    QStringList imagePaths = {"D:/projects/trunk_door_demo/trunk_door_demo/pic/0.PNG",
-                              "D:/projects/trunk_door_demo/trunk_door_demo/pic/1.PNG",
-                              "D:/projects/trunk_door_demo/trunk_door_demo/pic/2.PNG"};
+    QStringList imagePaths = {"pic/0.PNG",
+                              "pic/1.PNG",
+                              "pic/2.PNG"};
     if (idx < 3)
     {
         QPixmap pixmap(imagePaths[idx]);
