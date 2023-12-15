@@ -11,35 +11,28 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>尾门感应演示</string>
+   <string>TOF调测工具</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="pushButton_test">
-      <property name="text">
-       <string>钥匙靠近</string>
-      </property>
-     </widget>
-    </item>
+   <layout class="QGridLayout" name="gridLayout_2">
     <item row="0" column="1">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>491</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item>
        <widget class="QPushButton" name="pushButton_refreshComList">
         <property name="text">
@@ -67,10 +60,66 @@
      </layout>
     </item>
     <item row="1" column="0" colspan="2">
-     <widget class="QLabel" name="label_pic">
-      <property name="text">
-       <string>showpic</string>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>1</number>
       </property>
+      <widget class="QWidget" name="tabDemo">
+       <attribute name="title">
+        <string> 演示</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pushButton_test">
+          <property name="text">
+           <string>钥匙靠近</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_pic">
+          <property name="text">
+           <string>showpic</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tabTest">
+       <attribute name="title">
+        <string>TOF测试</string>
+       </attribute>
+       <widget class="QTableView" name="tableView">
+        <property name="geometry">
+         <rect>
+          <x>640</x>
+          <y>10</y>
+          <width>321</width>
+          <height>231</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QChartView" name="graphicsView">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>250</y>
+          <width>941</width>
+          <height>301</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="comboBox_mode">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>10</y>
+          <width>131</width>
+          <height>22</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -81,12 +130,24 @@
      <x>0</x>
      <y>0</y>
      <width>1013</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">QtCharts</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>comboBox_comList</tabstop>
+  <tabstop>pushButton_connectCom</tabstop>
+  <tabstop>lineEdit_baudrate</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

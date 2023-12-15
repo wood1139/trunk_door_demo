@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
-
+#include <QStandardItemModel>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,6 +23,39 @@ MainWindow::MainWindow(QWidget *parent)
         m_distArr[i] = 0;
     }
     showImg(0);
+
+    m_lineSeries = new QLineSeries();
+    m_lineSeries->append(0, 6);
+    m_lineSeries->append(2, 4);
+    m_lineSeries->append(3, 8);
+    m_lineSeries->append(7, 4);
+    m_lineSeries->append(10, 5);
+
+    m_chart = new QChart();
+    m_chart->addSeries(m_lineSeries);
+    m_chart->createDefaultAxes();
+    m_chart->setTitle("直方图");
+    m_chart->legend()->setVisible(false);
+
+    ui->graphicsView->setChart(m_chart);
+
+    // 创建数据模型
+    QStandardItemModel *model;
+    model = new QStandardItemModel(5,5,this);
+
+    // 填充数据
+    for (int row = 0; row < 5; ++row) {
+        for (int column = 0; column < 5; ++column) {
+            model->setData(model->index(row,column,QModelIndex()), QString::number(0));
+        }
+    }
+   ui->tableView->setModel(model);
+   ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+   ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+   ui->tableView->verticalHeader()->setVisible(false);
+   ui->tableView->horizontalHeader()->setVisible(false);
+
+
 }
 
 MainWindow::~MainWindow()
