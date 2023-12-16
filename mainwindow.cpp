@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QStandardItemModel>
+#include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,31 +13,31 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::slotSwitchImg);
     qDebug() << "app start!";
 
-    m_groundDist = 0;
-    m_keyIsOn = false;
-    m_doorIsOpen = false;
-    m_groundIsFound = false;
-    m_dataIsStable = false;
-    m_distArrIdx = 0;
-    for(int i=0; i<DATA_WIN_SIZE; i++)
-    {
-        m_distArr[i] = 0;
-    }
     showImg(0);
 
     m_lineSeries = new QLineSeries();
-    m_lineSeries->append(0, 6);
-    m_lineSeries->append(2, 4);
-    m_lineSeries->append(3, 8);
-    m_lineSeries->append(7, 4);
-    m_lineSeries->append(10, 5);
+    for(int i=0; i<2048; i++)
+    {
+        m_lineSeries->append(i, 100);
+    }
 
     m_chart = new QChart();
     m_chart->addSeries(m_lineSeries);
-    m_chart->createDefaultAxes();
+//    m_chart->createDefaultAxes();
     m_chart->setTitle("直方图");
     m_chart->legend()->setVisible(false);
 
+    m_axisX = new QValueAxis;
+    m_axisX->setRange(0, 2047);  // 设置 X 轴范围
+    m_chart->addAxis(m_axisX, Qt::AlignBottom);
+    m_lineSeries->attachAxis(m_axisX);
+
+    m_axisY = new QValueAxis;
+    m_axisY->setRange(0, 100);  // 设置 Y 轴范围
+    m_chart->addAxis(m_axisY, Qt::AlignLeft);
+    m_lineSeries->attachAxis(m_axisY);
+
+    m_serialPortReader.setLineSeriesPtr(m_lineSeries);
     ui->graphicsView->setChart(m_chart);
 
     // 创建数据模型
@@ -77,7 +78,7 @@ void MainWindow::on_pushButton_connectCom_clicked()
     if(m_serialPortReader.isConnected())
     {
         ui->pushButton_connectCom->setText("断开");
-        connect(&m_serialPortReader, &SerialPortHandler::sigLidarData, this, &MainWindow::handleLidarData);
+        connect(&m_serialPortReader, &SerialPortHandler::sigLidarData, this, &MainWindow::slotHandleLidarData);
     }
     else
     {
@@ -123,91 +124,15 @@ void MainWindow::showImg(int idx)
     }
 }
 
-void MainWindow::handleLidarData(int dist, int amp)
+void MainWindow::slotHandleLidarData(QByteArray frameData)
 {
-//    m_distArr[m_distArrIdx++] = dist;
-//    m_distArrIdx %= DATA_WIN_SIZE;
-//    updateState();
-    // qDebug() << "dist =" << dist << "amp =" << amp;
-    m_timer.start();
-    showImg(0);
+//    m_timer.start();
+//    showImg(0);
 }
 
 void MainWindow::on_pushButton_test_clicked()
 {
-    m_keyIsOn = true;
     showImg(1);
-}
-
-bool MainWindow::isDataStable(int &meanDist)
-{
-    int maxDist = 0;
-    int minDist = qInf();
-    int sumDist = 0;
-    bool res = false;
-    for (int i=0; i<DATA_WIN_SIZE; i++)
-    {
-        if(m_distArr[i] > maxDist) maxDist = m_distArr[i];
-        if(m_distArr[i] < minDist) minDist = m_distArr[i];
-        sumDist += m_distArr[i];
-    }
-    if(maxDist - minDist <= 3)
-    {
-        res = true;
-    }
-    meanDist = sumDist / DATA_WIN_SIZE;
-    return res;
-}
-
-void MainWindow::updateState()
-{
-    int meanDist;
-    if(m_keyIsOn)
-    {
-        if(m_groundIsFound)
-        {
-            if(m_doorIsOpen)
-            {
-//                if(isDataStable(meanDist))
-//                {
-//                    if(m_groundDist - meanDist < 2)
-//                    {
-//                        m_doorIsOpen = false;
-//                        // blink led and close the door
-//                    }
-//                }
-            }
-            else
-            {
-                if(isDataStable(meanDist))
-                {
-                    if(m_groundDist - meanDist > 2)
-                    {
-//                        m_doorIsOpen = true;
-                        // blink led and open the door
-                        m_keyIsOn = false;
-                        qDebug() << "blink led and open the door";
-                        m_timer.start();
-                        showImg(0);
-                    }
-                }
-            }
-        }
-        else
-        {
-            if(isDataStable(meanDist))
-            {
-                m_groundIsFound = true;
-                m_groundDist = meanDist;
-                // turn on led
-                qDebug() << "ground found, dist=" << meanDist <<"turn on led";
-            }
-        }
-    }
-    else
-    {
-        m_groundIsFound = false;
-    }
 }
 
 

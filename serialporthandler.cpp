@@ -73,38 +73,38 @@ bool SerialPortHandler::connectCom(QString portName, int baudrate)
     connect(&m_serialPort, &QSerialPort::readyRead, this, &SerialPortHandler::handleReadyRead);
     connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SerialPortHandler::handleError);
 
-    QByteArray cmd100Hz;
-    cmd100Hz.resize(6);
-    cmd100Hz[0] = 0xAA;
-    cmd100Hz[1] = 0x55;
-    cmd100Hz[2] = 0x64;
-    cmd100Hz[3] = 0x01;
-    cmd100Hz[4] = 0x01;
-    cmd100Hz[5] = 0x65;
-    m_serialPort.write(cmd100Hz);
+//    QByteArray cmd100Hz;
+//    cmd100Hz.resize(6);
+//    cmd100Hz[0] = 0xAA;
+//    cmd100Hz[1] = 0x55;
+//    cmd100Hz[2] = 0x64;
+//    cmd100Hz[3] = 0x01;
+//    cmd100Hz[4] = 0x01;
+//    cmd100Hz[5] = 0x65;
+//    m_serialPort.write(cmd100Hz);
 
-    QByteArray cmdStart;
-    cmdStart.resize(5);
-    cmdStart[0] = 0xAA;
-    cmdStart[1] = 0x55;
-    cmdStart[2] = 0x60;
-    cmdStart[3] = 0x00;
-    cmdStart[4] = 0x5F;
-    m_serialPort.write(cmdStart);
+//    QByteArray cmdStart;
+//    cmdStart.resize(5);
+//    cmdStart[0] = 0xAA;
+//    cmdStart[1] = 0x55;
+//    cmdStart[2] = 0x60;
+//    cmdStart[3] = 0x00;
+//    cmdStart[4] = 0x5F;
+//    m_serialPort.write(cmdStart);
 
     return true;
 }
 void SerialPortHandler::disconnectCom()
 {
-    QByteArray cmdStop;
-    cmdStop.resize(5);
-    cmdStop[0] = 0xAA;
-    cmdStop[1] = 0x55;
-    cmdStop[2] = 0x61;
-    cmdStop[3] = 0x00;
-    cmdStop[4] = 0x60;
-    m_serialPort.write(cmdStop);
-    m_serialPort.waitForBytesWritten();
+//    QByteArray cmdStop;
+//    cmdStop.resize(5);
+//    cmdStop[0] = 0xAA;
+//    cmdStop[1] = 0x55;
+//    cmdStop[2] = 0x61;
+//    cmdStop[3] = 0x00;
+//    cmdStop[4] = 0x60;
+//    m_serialPort.write(cmdStop);
+//    m_serialPort.waitForBytesWritten();
     m_serialPort.close();
 }
 
@@ -125,6 +125,11 @@ bool SerialPortHandler::isConnected()
     return m_serialPort.isOpen();
 }
 
+void SerialPortHandler::setLineSeriesPtr(QLineSeries *ptr)
+{
+    m_lineSeriesPtr = ptr;
+}
+
 uint8_t SerialPortHandler::calSum(QByteArray data)
 {
     uint8_t res = 0;
@@ -137,24 +142,67 @@ uint8_t SerialPortHandler::calSum(QByteArray data)
 
 void SerialPortHandler::handleReadyRead()
 {
+    static uint8_t pack_id = 0;
+
     m_readData.append(m_serialPort.readAll());
 
-    while(m_readData.size()>=9)
+    while(m_readData.size()>=5)
     {
-        if(uint8_t(m_readData[0])==0xAA && uint8_t(m_readData[1])==0x55 && uint8_t(m_readData[2])==0x60 && uint8_t(m_readData[3])==0x04)
+        if(uint8_t(m_readData[0])!=0x82)
         {
-            uint8_t sumRes = calSum(m_readData.mid(0, 8));
-            if(uint8_t(m_readData[8])==sumRes)
+            m_readData.remove(0, 1);
+            continue;
+        }
+        if(uint8_t(m_readData[1])!=0x2A)
+        {
+            m_readData.remove(0, 1);
+            continue;
+        }
+        uint8_t len = m_readData[2];
+        if(m_readData.size() < len)
+        {
+            break;
+        }
+        uint8_t sumRes = calSum(m_readData.mid(0, len-1));
+        if(uint8_t(m_readData[len-1])!=sumRes)
+        {
+            m_readData.remove(0, 1);
+            continue;
+        }
+        m_frameData = m_readData.mid(0, len);
+        m_readData.remove(0, len);
+
+        if(uint8_t(m_frameData[3])==0x01)
+        {
+            if(0 == pack_id)
             {
-                uint16_t dist = (uint8_t)m_readData[4] + ((uint8_t)m_readData[5]<<8);
-                uint8_t amp = (uint8_t)m_readData[6];
-                emit sigLidarData((int)dist, (int)amp);
+                m_histData.clear();
             }
-            m_readData.remove(0, 9);
+            if(uint8_t(m_frameData[4])==pack_id)
+            {
+                for(int i=0; i<128; i++)
+                {
+                    m_histData.append(QPointF(pack_id*128+i, uint8_t(m_frameData[5+i])));
+                }
+                pack_id++;
+                if(pack_id == 2048/128)
+                {
+                    pack_id = 0;
+                    if(nullptr != m_lineSeriesPtr)
+                    {
+                        m_lineSeriesPtr->replace(m_histData);
+                    }
+                }
+            }
+            else
+            {
+                // something went wrong
+                pack_id = 0;
+            }
         }
         else
         {
-            m_readData.remove(0, 1);
+            emit sigLidarData(m_frameData);
         }
     }
 }

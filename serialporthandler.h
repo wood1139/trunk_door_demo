@@ -54,6 +54,9 @@
 #include <QByteArray>
 #include <QSerialPort>
 #include <QStringList>
+#include <QtCharts/QLineSeries>
+
+QT_CHARTS_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +72,7 @@ public:
     void disconnectCom();
     QStringList scanComList();
     bool isConnected();
+    void setLineSeriesPtr(QLineSeries *ptr);
 
 private:
     uint8_t calSum(QByteArray data);
@@ -80,9 +84,13 @@ private slots:
 private:
     QSerialPort m_serialPort;
     QByteArray m_readData;
+    QByteArray m_frameData;
+    QVector<QPointF> m_histData;
+
+    QLineSeries *m_lineSeriesPtr;
 
 signals:
-    void sigLidarData(int dist, int amp);
+    void sigLidarData(QByteArray frameData);
 };
 
 #endif // SERIALPORTHANDLER_H
