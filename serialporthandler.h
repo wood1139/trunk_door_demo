@@ -91,6 +91,7 @@ private:
 
 signals:
     void sigLidarData(QByteArray frameData);
+    void sigSetAxisRange(int xmin, int xmax, int ymin, int ymax);
 };
 
 #endif // SERIALPORTHANDLER_H

@@ -143,6 +143,7 @@ uint8_t SerialPortHandler::calSum(QByteArray data)
 void SerialPortHandler::handleReadyRead()
 {
     static uint8_t pack_id = 0;
+    static int hist_data_max = 0;
 
     m_readData.append(m_serialPort.readAll());
 
@@ -177,12 +178,17 @@ void SerialPortHandler::handleReadyRead()
             if(0 == pack_id)
             {
                 m_histData.clear();
+                hist_data_max = 0;
             }
             if(uint8_t(m_frameData[4])==pack_id)
             {
                 for(int i=0; i<128; i++)
                 {
                     m_histData.append(QPointF(pack_id*128+i, uint8_t(m_frameData[5+i])));
+                    if(uint8_t(m_frameData[5+i])>hist_data_max)
+                    {
+                        hist_data_max = m_frameData[5+i];
+                    }
                 }
                 pack_id++;
                 if(pack_id == 2048/128)
@@ -191,6 +197,12 @@ void SerialPortHandler::handleReadyRead()
                     if(nullptr != m_lineSeriesPtr)
                     {
                         m_lineSeriesPtr->replace(m_histData);
+                        int y_range = hist_data_max * 1.2;
+                        if(y_range < 20)
+                        {
+                            y_range = 20;
+                        }
+                        emit sigSetAxisRange(0, 2048, 0, y_range);
                     }
                 }
             }

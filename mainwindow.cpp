@@ -11,6 +11,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     m_timer.setInterval(200);
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::slotSwitchImg);
+    QObject::connect(&m_serialPortReader, &SerialPortHandler::sigLidarData, this, &MainWindow::slotHandleLidarData);
+    QObject::connect(&m_serialPortReader, &SerialPortHandler::sigSetAxisRange, this, &MainWindow::slotSetAxisRange);
     qDebug() << "app start!";
 
     showImg(0);
@@ -18,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_lineSeries = new QLineSeries();
     for(int i=0; i<2048; i++)
     {
-        m_lineSeries->append(i, 100);
+        m_lineSeries->append(i, 0);
     }
 
     m_chart = new QChart();
@@ -28,15 +30,16 @@ MainWindow::MainWindow(QWidget *parent)
     m_chart->legend()->setVisible(false);
 
     m_axisX = new QValueAxis;
-    m_axisX->setRange(0, 2047);  // 设置 X 轴范围
+    m_axisX->setTickCount(17);
     m_chart->addAxis(m_axisX, Qt::AlignBottom);
     m_lineSeries->attachAxis(m_axisX);
 
     m_axisY = new QValueAxis;
-    m_axisY->setRange(0, 100);  // 设置 Y 轴范围
+    m_axisY->setTickCount(11);
     m_chart->addAxis(m_axisY, Qt::AlignLeft);
     m_lineSeries->attachAxis(m_axisY);
 
+    slotSetAxisRange(0,2048,0,100);
     m_serialPortReader.setLineSeriesPtr(m_lineSeries);
     ui->graphicsView->setChart(m_chart);
 
@@ -78,7 +81,6 @@ void MainWindow::on_pushButton_connectCom_clicked()
     if(m_serialPortReader.isConnected())
     {
         ui->pushButton_connectCom->setText("断开");
-        connect(&m_serialPortReader, &SerialPortHandler::sigLidarData, this, &MainWindow::slotHandleLidarData);
     }
     else
     {
@@ -112,6 +114,13 @@ void MainWindow::slotSwitchImg()
     }
 
 }
+
+void MainWindow::slotSetAxisRange(int xmin, int xmax, int ymin, int ymax)
+{
+    m_axisX->setRange(xmin, xmax);
+    m_axisY->setRange(ymin, ymax);
+}
+
 void MainWindow::showImg(int idx)
 {
     QStringList imagePaths = {"pic/0.PNG",
