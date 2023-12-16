@@ -55,6 +55,7 @@
 #include <QSerialPort>
 #include <QStringList>
 #include <QtCharts/QLineSeries>
+#include <QStandardItemModel>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -72,7 +73,8 @@ public:
     void disconnectCom();
     QStringList scanComList();
     bool isConnected();
-    void setLineSeriesPtr(QLineSeries *ptr);
+    void setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr);
+    void setVi4302Mode(int mode);
 
 private:
     uint8_t calSum(QByteArray data);
@@ -88,6 +90,7 @@ private:
     QVector<QPointF> m_histData;
 
     QLineSeries *m_lineSeriesPtr;
+    QStandardItemModel *m_tableModelPtr;
 
 signals:
     void sigLidarData(QByteArray frameData);

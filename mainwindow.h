@@ -7,7 +7,7 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
-#include <QThread>
+#include <QStandardItemModel>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -30,6 +30,7 @@ private slots:
     void on_pushButton_connectCom_clicked();
     void on_pushButton_refreshComList_clicked();
     void on_pushButton_test_clicked();
+    void on_comboBox_mode_activated(int index);
 
 private:
     Ui::MainWindow *ui;
@@ -41,6 +42,8 @@ private:
     QChart      *m_chart;
     QValueAxis  *m_axisX;
     QValueAxis  *m_axisY;
+
+    QStandardItemModel *m_tableModel;
 
 public slots:
     void slotHandleLidarData(QByteArray frameData);

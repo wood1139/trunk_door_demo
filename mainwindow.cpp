@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
-#include <QStandardItemModel>
 #include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -40,26 +39,27 @@ MainWindow::MainWindow(QWidget *parent)
     m_lineSeries->attachAxis(m_axisY);
 
     slotSetAxisRange(0,2048,0,100);
-    m_serialPortReader.setLineSeriesPtr(m_lineSeries);
     ui->graphicsView->setChart(m_chart);
 
-    // 创建数据模型
-    QStandardItemModel *model;
-    model = new QStandardItemModel(5,5,this);
+    m_tableModel = new QStandardItemModel(5,5,this);
 
     // 填充数据
     for (int row = 0; row < 5; ++row) {
         for (int column = 0; column < 5; ++column) {
-            model->setData(model->index(row,column,QModelIndex()), QString::number(0));
+            m_tableModel->setData(m_tableModel->index(row,column,QModelIndex()), QString::number(0));
         }
     }
-   ui->tableView->setModel(model);
+   ui->tableView->setModel(m_tableModel);
    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
    ui->tableView->verticalHeader()->setVisible(false);
    ui->tableView->horizontalHeader()->setVisible(false);
 
+   m_serialPortReader.setDataPtr(m_lineSeries, m_tableModel);
 
+   ui->comboBox_mode->addItem("Range Mode");
+   ui->comboBox_mode->addItem("Single Pixel Mode");
+   ui->comboBox_mode->addItem("Histogram Mode");
 }
 
 MainWindow::~MainWindow()
@@ -144,4 +144,8 @@ void MainWindow::on_pushButton_test_clicked()
     showImg(1);
 }
 
+void MainWindow::on_comboBox_mode_activated(int index)
+{
+    m_serialPortReader.setVi4302Mode(index);
+}
 

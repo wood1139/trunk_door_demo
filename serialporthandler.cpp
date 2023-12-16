@@ -125,9 +125,27 @@ bool SerialPortHandler::isConnected()
     return m_serialPort.isOpen();
 }
 
-void SerialPortHandler::setLineSeriesPtr(QLineSeries *ptr)
+void SerialPortHandler::setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr)
 {
-    m_lineSeriesPtr = ptr;
+    m_lineSeriesPtr = LinePtr;
+    m_tableModelPtr = tabPtr;
+}
+
+void SerialPortHandler::setVi4302Mode(int mode)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x06;
+        cmd[3] = 0x03;
+        cmd[4] = mode;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
 }
 
 uint8_t SerialPortHandler::calSum(QByteArray data)
@@ -174,7 +192,7 @@ void SerialPortHandler::handleReadyRead()
         m_readData.remove(0, len);
 
         if(uint8_t(m_frameData[3])==0x01)
-        {
+        {// histogram data
             if(0 == pack_id)
             {
                 m_histData.clear();
@@ -210,6 +228,15 @@ void SerialPortHandler::handleReadyRead()
             {
                 // something went wrong
                 pack_id = 0;
+            }
+        }
+        else if(uint8_t(m_frameData[3])==0x02)
+        {// sigle pixel data
+            for (int row = 0; row < 5; ++row) {
+                for (int column = 0; column < 5; ++column) {
+                    uint16_t val = uint8_t(m_frameData[4+row*10+column*2]) + (uint8_t(m_frameData[5+row*10+column*2])<<8);
+                    m_tableModelPtr->setData(m_tableModelPtr->index(row,column,QModelIndex()), QString::number(val));
+                }
             }
         }
         else
