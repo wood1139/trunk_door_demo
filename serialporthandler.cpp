@@ -239,6 +239,33 @@ void SerialPortHandler::handleReadyRead()
                 }
             }
         }
+        else if(uint8_t(m_frameData[3])==0x03)
+        {// range raw data
+            m_rangeRawData.norm_tof = uint8_t(m_frameData[4]) + (uint8_t(m_frameData[5])<<8);
+            m_rangeRawData.norm_peak = uint8_t(m_frameData[6]) + (uint8_t(m_frameData[7])<<8);
+            m_rangeRawData.norm_noise = uint8_t(m_frameData[8]) + (uint8_t(m_frameData[9])<<8) + (uint8_t(m_frameData[10])<<16);
+            m_rangeRawData.int_num = uint8_t(m_frameData[11]) + (uint8_t(m_frameData[12])<<8);
+            m_rangeRawData.atten_peak = uint8_t(m_frameData[13]) + (uint8_t(m_frameData[14])<<8);
+            m_rangeRawData.atten_noise = uint8_t(m_frameData[15]) + (uint8_t(m_frameData[16])<<8) + (uint8_t(m_frameData[17])<<16);
+            m_rangeRawData.ref_tof = uint8_t(m_frameData[18]) + (uint8_t(m_frameData[19])<<8);
+            m_rangeRawData.temp_sensor_x100 = uint8_t(m_frameData[20]) + (uint8_t(m_frameData[21])<<8);
+            m_rangeRawData.temp_mcu_x100 = uint8_t(m_frameData[22]) + (uint8_t(m_frameData[23])<<8);
+            m_rangeRawData.ctof = uint8_t(m_frameData[24]) + (uint8_t(m_frameData[25])<<8);
+            m_rangeRawData.confidence = uint8_t(m_frameData[26]);
+
+            int width = 5;
+            qDebug().noquote() <<   "norm_tof=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
+                                    "norm_peak=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
+                                    "norm_noise=" << QString("%1").arg(m_rangeRawData.norm_noise, width) <<
+                                    "int_num=" << QString("%1").arg(m_rangeRawData.int_num, width) <<
+                                    "atten_peak=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
+                                    "atten_noise=" << QString("%1").arg(m_rangeRawData.atten_noise, width) <<
+                                    "ref_tof=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
+                                    "temp_sensor_x100=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, width) <<
+                                    "temp_mcu_x100=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, width) <<
+                                    "ctof=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
+                                    "confidence=" << QString("%1").arg(m_rangeRawData.confidence, width);
+        }
         else
         {
             emit sigLidarData(m_frameData);

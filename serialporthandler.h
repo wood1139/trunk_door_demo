@@ -63,6 +63,21 @@ QT_BEGIN_NAMESPACE
 
 QT_END_NAMESPACE
 
+typedef struct
+{
+    int norm_tof;
+    int norm_peak;
+    int norm_noise;
+    int int_num;
+    int atten_peak;
+    int atten_noise;
+    int ref_tof;
+    int temp_sensor_x100;
+    int temp_mcu_x100;
+    int ctof;
+    int confidence;
+}RawDataStruct;
+
 class SerialPortHandler : public QObject
 {
     Q_OBJECT
@@ -91,6 +106,8 @@ private:
 
     QLineSeries *m_lineSeriesPtr;
     QStandardItemModel *m_tableModelPtr;
+
+    RawDataStruct m_rangeRawData;
 
 signals:
     void sigLidarData(QByteArray frameData);
