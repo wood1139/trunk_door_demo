@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QDateTime>
+#include <QDir>
+#include <QDesktopServices>
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -60,6 +63,12 @@ MainWindow::MainWindow(QWidget *parent)
    ui->comboBox_mode->addItem("Range Mode");
    ui->comboBox_mode->addItem("Single Pixel Mode");
    ui->comboBox_mode->addItem("Histogram Mode");
+
+   QDir dir("data");
+   if (!dir.exists())
+   {
+        dir.mkpath(".");
+   }
 }
 
 MainWindow::~MainWindow()
@@ -135,8 +144,11 @@ void MainWindow::showImg(int idx)
 
 void MainWindow::slotHandleLidarData(QByteArray frameData)
 {
-//    m_timer.start();
-//    showImg(0);
+    if(uint8_t(frameData[3])==0x04)
+    {
+        m_timer.start();
+        showImg(0);
+    }
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -147,5 +159,41 @@ void MainWindow::on_pushButton_test_clicked()
 void MainWindow::on_comboBox_mode_activated(int index)
 {
     m_serialPortReader.setVi4302Mode(index);
+}
+
+
+void MainWindow::on_pushButton_record_clicked()
+{
+    QString mode = ui->comboBox_mode->currentText();
+    QStringList words = mode.split(" ");
+    QString modeStr = words[0];
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QString formattedDateTime = currentDateTime.toString("yyyyMMddhhmmss");
+    QString filename = "data/mode_" + modeStr + "-realdist_" + ui->lineEdit_realDist->text() + "-ref_" + ui->lineEdit_ref->text() + "-time_" + formattedDateTime + ".csv";
+    qDebug() << filename;
+
+    if(m_serialPortReader.isRecording())
+    {
+        m_serialPortReader.stopRecord();
+        ui->pushButton_record->setText("开始录制");
+    }
+    else
+    {
+        m_serialPortReader.startRecord(filename, ui->comboBox_mode->currentIndex());
+        ui->pushButton_record->setText("停止录制");
+    }
+}
+
+
+void MainWindow::on_pushButton_openDataDir_clicked()
+{
+    QString folderPath = "data";
+    QUrl folderUrl = QUrl::fromLocalFile(folderPath);
+    // 打开文件资源管理器
+    if (QDesktopServices::openUrl(folderUrl)) {
+        qDebug() << "File explorer opened successfully.";
+    } else {
+        qDebug() << "Failed to open file explorer.";
+    }
 }
 

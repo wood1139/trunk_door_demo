@@ -56,6 +56,8 @@
 #include <QStringList>
 #include <QtCharts/QLineSeries>
 #include <QStandardItemModel>
+#include <QFile>
+#include <QTextStream>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -74,8 +76,10 @@ typedef struct
     int ref_tof;
     int temp_sensor_x100;
     int temp_mcu_x100;
+    int raw_tof_mm;
     int ctof;
     int confidence;
+    uint32_t timestamp_ms;
 }RawDataStruct;
 
 class SerialPortHandler : public QObject
@@ -90,6 +94,9 @@ public:
     bool isConnected();
     void setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr);
     void setVi4302Mode(int mode);
+    void startRecord(QString filename, int mode);
+    void stopRecord();
+    bool isRecording();
 
 private:
     uint8_t calSum(QByteArray data);
@@ -108,6 +115,11 @@ private:
     QStandardItemModel *m_tableModelPtr;
 
     RawDataStruct m_rangeRawData;
+
+    bool m_isRecording;
+    int m_mode;
+    QFile m_hfile;
+    QTextStream m_fstream;
 
 signals:
     void sigLidarData(QByteArray frameData);

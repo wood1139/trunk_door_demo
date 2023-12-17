@@ -32,6 +32,10 @@ private slots:
     void on_pushButton_test_clicked();
     void on_comboBox_mode_activated(int index);
 
+    void on_pushButton_record_clicked();
+
+    void on_pushButton_openDataDir_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

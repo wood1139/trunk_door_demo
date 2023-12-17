@@ -148,6 +148,37 @@ void SerialPortHandler::setVi4302Mode(int mode)
     }
 }
 
+void SerialPortHandler::startRecord(QString filename, int mode)
+{
+    m_hfile.setFileName(filename);
+    if (m_hfile.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        m_mode = mode;
+        m_fstream.setDevice(&m_hfile);
+        m_isRecording = true;
+
+        if(0 == mode)
+        {// Range Mode
+            m_fstream << "norm_tof,norm_peak,norm_noise,int_num,atten_peak,atten_noise,ref_tof,temp_sensor_x100,temp_mcu_x100,raw_tof_mm,ctof,confidence,timestamp_ms,\n";
+        }
+        else if(2 == mode)
+        {// Histogram Mode
+            m_fstream << "idx,data,\n";
+        }
+    }
+}
+
+void SerialPortHandler::stopRecord()
+{
+    m_isRecording = false;
+    m_hfile.close();
+}
+
+bool SerialPortHandler::isRecording()
+{
+    return m_isRecording;
+}
+
 uint8_t SerialPortHandler::calSum(QByteArray data)
 {
     uint8_t res = 0;
@@ -222,6 +253,13 @@ void SerialPortHandler::handleReadyRead()
                         }
                         emit sigSetAxisRange(0, 2048, 0, y_range);
                     }
+                    if(m_isRecording)
+                    {
+                        for(int i=0; i<2048; i++)
+                        {
+                            m_fstream << m_histData[i].x() << "," << m_histData[i].y() << ",\n";
+                        }
+                    }
                 }
             }
             else
@@ -248,23 +286,43 @@ void SerialPortHandler::handleReadyRead()
             m_rangeRawData.atten_peak = uint8_t(m_frameData[13]) + (uint8_t(m_frameData[14])<<8);
             m_rangeRawData.atten_noise = uint8_t(m_frameData[15]) + (uint8_t(m_frameData[16])<<8) + (uint8_t(m_frameData[17])<<16);
             m_rangeRawData.ref_tof = uint8_t(m_frameData[18]) + (uint8_t(m_frameData[19])<<8);
-            m_rangeRawData.temp_sensor_x100 = uint8_t(m_frameData[20]) + (uint8_t(m_frameData[21])<<8);
-            m_rangeRawData.temp_mcu_x100 = uint8_t(m_frameData[22]) + (uint8_t(m_frameData[23])<<8);
-            m_rangeRawData.ctof = uint8_t(m_frameData[24]) + (uint8_t(m_frameData[25])<<8);
-            m_rangeRawData.confidence = uint8_t(m_frameData[26]);
+            m_rangeRawData.temp_sensor_x100 = int16_t(uint16_t(uint8_t(m_frameData[20]) + (uint8_t(m_frameData[21])<<8)));
+            m_rangeRawData.temp_mcu_x100 = int16_t(uint16_t(uint8_t(m_frameData[22]) + (uint8_t(m_frameData[23])<<8)));
+            m_rangeRawData.raw_tof_mm = int16_t(uint16_t(uint8_t(m_frameData[24]) + (uint8_t(m_frameData[25])<<8)));
+            m_rangeRawData.ctof = uint8_t(m_frameData[26]) + (uint8_t(m_frameData[27])<<8);
+            m_rangeRawData.confidence = uint8_t(m_frameData[28]);
+            m_rangeRawData.timestamp_ms = uint8_t(m_frameData[29]) + (uint8_t(m_frameData[30])<<8) + (uint8_t(m_frameData[31])<<16) + (uint8_t(m_frameData[32])<<16);
 
             int width = 5;
-            qDebug().noquote() <<   "norm_tof=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
-                                    "norm_peak=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
-                                    "norm_noise=" << QString("%1").arg(m_rangeRawData.norm_noise, width) <<
-                                    "int_num=" << QString("%1").arg(m_rangeRawData.int_num, width) <<
-                                    "atten_peak=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
-                                    "atten_noise=" << QString("%1").arg(m_rangeRawData.atten_noise, width) <<
+            qDebug().noquote() <<   "ntof=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
+                                    "npeak=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
+                                    "nnoise=" << QString("%1").arg(m_rangeRawData.norm_noise, 3) <<
+                                    "int_num=" << QString("%1").arg(m_rangeRawData.int_num, 3) <<
+                                    "apeak=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
+                                    "anoise=" << QString("%1").arg(m_rangeRawData.atten_noise, 3) <<
                                     "ref_tof=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
-                                    "temp_sensor_x100=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, width) <<
-                                    "temp_mcu_x100=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, width) <<
+                                    "temp_sensor=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, 4) <<
+                                    "temp_mcu=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, 4) <<
+                                    "raw_tof_mm=" << QString("%1").arg(m_rangeRawData.raw_tof_mm, width) <<
                                     "ctof=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
-                                    "confidence=" << QString("%1").arg(m_rangeRawData.confidence, width);
+                                    "confidence=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
+                                    "timestamp=" << QString("%1").arg(m_rangeRawData.timestamp_ms, width);
+            if(m_isRecording)
+            {
+                m_fstream << m_rangeRawData.norm_tof << "," <<
+                             m_rangeRawData.norm_peak << "," <<
+                             m_rangeRawData.norm_noise << "," <<
+                             m_rangeRawData.int_num << "," <<
+                             m_rangeRawData.atten_peak << "," <<
+                             m_rangeRawData.atten_noise << "," <<
+                             m_rangeRawData.ref_tof << "," <<
+                             m_rangeRawData.temp_sensor_x100 << "," <<
+                             m_rangeRawData.temp_mcu_x100 << "," <<
+                             m_rangeRawData.raw_tof_mm << "," <<
+                             m_rangeRawData.ctof << "," <<
+                             m_rangeRawData.confidence << "," <<
+                             m_rangeRawData.timestamp_ms << ",\n";
+            }
         }
         else
         {
