@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,7 +46,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->graphicsView->setChart(m_chart);
 
     m_tableModel = new QStandardItemModel(5,5,this);
-
     // 填充数据
     for (int row = 0; row < 5; ++row) {
         for (int column = 0; column < 5; ++column) {
@@ -144,10 +144,33 @@ void MainWindow::showImg(int idx)
 
 void MainWindow::slotHandleLidarData(QByteArray frameData)
 {
-    if(uint8_t(frameData[3])==0x04)
-    {
+    if(uint8_t(frameData[3])==0xA4)
+    { // 脚踩信号
         m_timer.start();
         showImg(0);
+    }
+    else if(uint8_t(frameData[3])==0x01)
+    { // 版本号
+        QString versionStr;
+        for(int i=0; i<26; i++)
+        {
+            versionStr += char(frameData[4+i]);
+        }
+        ui->label_firmwareVersion->setText(versionStr);
+    }
+    else if(uint8_t(frameData[3])==0x11)
+    {
+        QMessageBox messageBox;
+//        messageBox.setWindowTitle("保存配置");
+        if(0 ==frameData[4])
+        {
+            messageBox.setText("保存成功");
+        }
+        else
+        {
+            messageBox.setText("保存失败");
+        }
+        messageBox.exec();
     }
 }
 
@@ -158,7 +181,7 @@ void MainWindow::on_pushButton_test_clicked()
 
 void MainWindow::on_comboBox_mode_activated(int index)
 {
-    m_serialPortReader.setVi4302Mode(index);
+    m_serialPortReader.devSetVi4302Mode(index);
 }
 
 
@@ -195,5 +218,51 @@ void MainWindow::on_pushButton_openDataDir_clicked()
     } else {
         qDebug() << "Failed to open file explorer.";
     }
+}
+
+
+void MainWindow::on_pushButton_readFirmwareVersion_clicked()
+{
+    m_serialPortReader.devReadFirmwareVersion();
+}
+
+
+void MainWindow::on_checkBox_rangeEnable_stateChanged(int arg1)
+{
+    if(arg1)
+    {
+        m_serialPortReader.devRangingEnable(1);
+    }
+    else
+    {
+        m_serialPortReader.devRangingEnable(0);
+    }
+
+}
+
+
+void MainWindow::on_checkBox_hardLineMode_stateChanged(int arg1)
+{
+    if(arg1)
+    {
+        m_serialPortReader.devSetHardLineMode(1);
+    }
+    else
+    {
+        m_serialPortReader.devSetHardLineMode(0);
+    }
+
+}
+
+
+void MainWindow::on_pushButton_saveConfig_clicked()
+{
+    m_serialPortReader.devSaveConfig();
+}
+
+
+void MainWindow::on_pushButton_softReset_clicked()
+{
+    m_serialPortReader.devSoftReset();
 }
 

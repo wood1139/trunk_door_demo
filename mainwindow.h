@@ -36,6 +36,16 @@ private slots:
 
     void on_pushButton_openDataDir_clicked();
 
+    void on_pushButton_readFirmwareVersion_clicked();
+
+    void on_checkBox_rangeEnable_stateChanged(int arg1);
+
+    void on_checkBox_hardLineMode_stateChanged(int arg1);
+
+    void on_pushButton_saveConfig_clicked();
+
+    void on_pushButton_softReset_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

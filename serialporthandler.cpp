@@ -131,23 +131,6 @@ void SerialPortHandler::setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tab
     m_tableModelPtr = tabPtr;
 }
 
-void SerialPortHandler::setVi4302Mode(int mode)
-{
-    QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(6);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x06;
-        cmd[3] = 0x03;
-        cmd[4] = mode;
-        cmd[5] = calSum(cmd.mid(0,5));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
-}
-
 void SerialPortHandler::startRecord(QString filename, int mode)
 {
     m_hfile.setFileName(filename);
@@ -222,7 +205,7 @@ void SerialPortHandler::handleReadyRead()
         m_frameData = m_readData.mid(0, len);
         m_readData.remove(0, len);
 
-        if(uint8_t(m_frameData[3])==0x01)
+        if(uint8_t(m_frameData[3])==0xA1)
         {// histogram data
             if(0 == pack_id)
             {
@@ -268,7 +251,7 @@ void SerialPortHandler::handleReadyRead()
                 pack_id = 0;
             }
         }
-        else if(uint8_t(m_frameData[3])==0x02)
+        else if(uint8_t(m_frameData[3])==0xA2)
         {// sigle pixel data
             for (int row = 0; row < 5; ++row) {
                 for (int column = 0; column < 5; ++column) {
@@ -277,7 +260,7 @@ void SerialPortHandler::handleReadyRead()
                 }
             }
         }
-        else if(uint8_t(m_frameData[3])==0x03)
+        else if(uint8_t(m_frameData[3])==0xA3)
         {// range raw data
             m_rangeRawData.norm_tof = uint8_t(m_frameData[4]) + (uint8_t(m_frameData[5])<<8);
             m_rangeRawData.norm_peak = uint8_t(m_frameData[6]) + (uint8_t(m_frameData[7])<<8);
@@ -338,3 +321,103 @@ void SerialPortHandler::handleError(QSerialPort::SerialPortError serialPortError
         QCoreApplication::exit(1);
     }
 }
+
+void SerialPortHandler::devSetVi4302Mode(int mode)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x06;
+        cmd[3] = 0x03;
+        cmd[4] = mode;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSetHardLineMode(int mode)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x06;
+        cmd[3] = 0x04;
+        cmd[4] = mode;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSoftReset()
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(5);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x05;
+        cmd[3] = 0x02;
+        cmd[4] = calSum(cmd.mid(0,4));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devReadFirmwareVersion()
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(5);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x05;
+        cmd[3] = 0x01;
+        cmd[4] = calSum(cmd.mid(0,4));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devRangingEnable(int en)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x06;
+        cmd[3] = 0x05;
+        cmd[4] = en;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSaveConfig()
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(5);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x05;
+        cmd[3] = 0x11;
+        cmd[4] = calSum(cmd.mid(0,4));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+

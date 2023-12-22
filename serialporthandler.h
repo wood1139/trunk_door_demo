@@ -93,10 +93,16 @@ public:
     QStringList scanComList();
     bool isConnected();
     void setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr);
-    void setVi4302Mode(int mode);
     void startRecord(QString filename, int mode);
     void stopRecord();
     bool isRecording();
+
+    void devSetVi4302Mode(int mode);
+    void devSetHardLineMode(int mode);
+    void devSoftReset();
+    void devReadFirmwareVersion();
+    void devRangingEnable(int en);
+    void devSaveConfig();
 
 private:
     uint8_t calSum(QByteArray data);

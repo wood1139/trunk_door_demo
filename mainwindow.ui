@@ -92,7 +92,7 @@
        <widget class="QTableView" name="tableView">
         <property name="geometry">
          <rect>
-          <x>640</x>
+          <x>780</x>
           <y>10</y>
           <width>321</width>
           <height>231</height>
@@ -104,8 +104,8 @@
          <rect>
           <x>20</x>
           <y>250</y>
-          <width>941</width>
-          <height>301</height>
+          <width>1081</width>
+          <height>321</height>
          </rect>
         </property>
        </widget>
@@ -217,6 +217,96 @@
          <string> 打开数据路径</string>
         </property>
        </widget>
+       <widget class="QPushButton" name="pushButton_readFirmwareVersion">
+        <property name="geometry">
+         <rect>
+          <x>250</x>
+          <y>10</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>读版本号</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_firmwareVersion">
+        <property name="geometry">
+         <rect>
+          <x>370</x>
+          <y>10</y>
+          <width>231</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_rangeEnable">
+        <property name="geometry">
+         <rect>
+          <x>210</x>
+          <y>50</y>
+          <width>131</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string> 测距使能</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBox_hardLineMode">
+        <property name="geometry">
+         <rect>
+          <x>210</x>
+          <y>90</y>
+          <width>131</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::RightToLeft</enum>
+        </property>
+        <property name="text">
+         <string>  硬线模式</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_saveConfig">
+        <property name="geometry">
+         <rect>
+          <x>510</x>
+          <y>60</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string> 保存配置</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton_softReset">
+        <property name="geometry">
+         <rect>
+          <x>510</x>
+          <y>100</y>
+          <width>93</width>
+          <height>28</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>软件复位</string>
+        </property>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -228,7 +318,7 @@
      <x>0</x>
      <y>0</y>
      <width>1140</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>
