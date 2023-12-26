@@ -64,6 +64,17 @@ MainWindow::MainWindow(QWidget *parent)
    ui->comboBox_mode->addItem("Single Pixel Mode");
    ui->comboBox_mode->addItem("Histogram Mode");
 
+   ui->comboBox_hardlinePinSel->addItem("None");
+   ui->comboBox_hardlinePinSel->addItem("UART TX");
+   ui->comboBox_hardlinePinSel->addItem("LED1");
+   ui->comboBox_hardlinePinSel->addItem("LED2");
+
+   ui->comboBox_hardlinePinMode->addItem("Open-Drain");
+   ui->comboBox_hardlinePinMode->addItem("Push-Pull");
+
+   ui->lineEdit_hardlinePulseMs->setText("50");
+
+
    QDir dir("data");
    if (!dir.exists())
    {
@@ -240,21 +251,6 @@ void MainWindow::on_checkBox_rangeEnable_stateChanged(int arg1)
 
 }
 
-
-void MainWindow::on_checkBox_hardLineMode_stateChanged(int arg1)
-{
-    if(arg1)
-    {
-        m_serialPortReader.devSetHardLineMode(1);
-    }
-    else
-    {
-        m_serialPortReader.devSetHardLineMode(0);
-    }
-
-}
-
-
 void MainWindow::on_pushButton_saveConfig_clicked()
 {
     m_serialPortReader.devSaveConfig();
@@ -264,5 +260,32 @@ void MainWindow::on_pushButton_saveConfig_clicked()
 void MainWindow::on_pushButton_softReset_clicked()
 {
     m_serialPortReader.devSoftReset();
+}
+
+
+void MainWindow::on_pushButton_hardlineConfig_clicked()
+{
+    int pin_sel = ui->comboBox_hardlinePinSel->currentIndex();
+    int pin_mode = ui->comboBox_hardlinePinMode->currentIndex();
+    int pwidth = ui->lineEdit_hardlinePulseMs->text().toInt();
+
+    qDebug() << "pin_sel=" << pin_sel << " pin_mode="<< pin_mode << " pwidth="<< pwidth;
+    m_serialPortReader.devSetHardLineConfig(pin_sel,pin_mode,pwidth);
+}
+
+
+void MainWindow::on_pushButton_sampleRate_clicked()
+{
+    int rate = ui->lineEdit_sampleRate->text().toInt();
+    qDebug() << "sample rate=" << rate;
+    m_serialPortReader.devSetSampleRate(rate);
+}
+
+
+void MainWindow::on_pushButton_sampleRate_2_clicked()
+{
+    int pwidth = ui->lineEdit_ldTrigPwidth->text().toInt();
+    qDebug() << "ld trig pulse width =" << pwidth << "*100ps";
+    m_serialPortReader.devSetLdTrigPwidth(pwidth);
 }
 

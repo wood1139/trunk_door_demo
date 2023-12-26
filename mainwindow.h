@@ -40,11 +40,15 @@ private slots:
 
     void on_checkBox_rangeEnable_stateChanged(int arg1);
 
-    void on_checkBox_hardLineMode_stateChanged(int arg1);
-
     void on_pushButton_saveConfig_clicked();
 
     void on_pushButton_softReset_clicked();
+
+    void on_pushButton_hardlineConfig_clicked();
+
+    void on_pushButton_sampleRate_clicked();
+
+    void on_pushButton_sampleRate_2_clicked();
 
 private:
     Ui::MainWindow *ui;

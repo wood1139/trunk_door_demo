@@ -339,18 +339,57 @@ void SerialPortHandler::devSetVi4302Mode(int mode)
     }
 }
 
-void SerialPortHandler::devSetHardLineMode(int mode)
+void SerialPortHandler::devSetHardLineConfig(int pin_sel, int pin_mode, int pwidth_ms)
 {
     QByteArray cmd;
     if(m_serialPort.isOpen())
     {
-        cmd.resize(6);
+        cmd.resize(9);
         cmd[0] = 0x8F;
         cmd[1] = 0xD4;
-        cmd[2] = 0x06;
+        cmd[2] = 0x09;
         cmd[3] = 0x04;
-        cmd[4] = mode;
-        cmd[5] = calSum(cmd.mid(0,5));
+        cmd[4] = pin_sel;
+        cmd[5] = pin_mode;
+        cmd[6] = (uint16_t)pwidth_ms & 0xFF;
+        cmd[7] = ((uint16_t)pwidth_ms>>8) & 0xFF;
+        cmd[8] = calSum(cmd.mid(0,8));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSetSampleRate(int sample_rate)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(7);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x07;
+        cmd[3] = 0x06;
+        cmd[4] = (uint16_t)sample_rate & 0xFF;
+        cmd[5] = ((uint16_t)sample_rate>>8) & 0xFF;
+        cmd[6] = calSum(cmd.mid(0,6));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSetLdTrigPwidth(int pwidth)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(7);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x07;
+        cmd[3] = 0x07;
+        cmd[4] = (uint16_t)pwidth & 0xFF;
+        cmd[5] = ((uint16_t)pwidth>>8) & 0xFF;
+        cmd[6] = calSum(cmd.mid(0,6));
         m_serialPort.write(cmd);
         m_serialPort.waitForBytesWritten();
     }
