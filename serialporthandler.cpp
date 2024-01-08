@@ -253,7 +253,10 @@ void SerialPortHandler::handleReadyRead()
                     }
                 }
             }
-            m_fstream << "\n";
+            if(m_isRecording)
+            {
+                m_fstream << "\n";
+            }
         }
         else if(uint8_t(m_frameData[3])==0xA3)
         {// range raw data
