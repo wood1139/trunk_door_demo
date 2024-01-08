@@ -73,38 +73,10 @@ bool SerialPortHandler::connectCom(QString portName, int baudrate)
     connect(&m_serialPort, &QSerialPort::readyRead, this, &SerialPortHandler::handleReadyRead);
     connect(&m_serialPort, &QSerialPort::errorOccurred, this, &SerialPortHandler::handleError);
 
-//    QByteArray cmd100Hz;
-//    cmd100Hz.resize(6);
-//    cmd100Hz[0] = 0xAA;
-//    cmd100Hz[1] = 0x55;
-//    cmd100Hz[2] = 0x64;
-//    cmd100Hz[3] = 0x01;
-//    cmd100Hz[4] = 0x01;
-//    cmd100Hz[5] = 0x65;
-//    m_serialPort.write(cmd100Hz);
-
-//    QByteArray cmdStart;
-//    cmdStart.resize(5);
-//    cmdStart[0] = 0xAA;
-//    cmdStart[1] = 0x55;
-//    cmdStart[2] = 0x60;
-//    cmdStart[3] = 0x00;
-//    cmdStart[4] = 0x5F;
-//    m_serialPort.write(cmdStart);
-
     return true;
 }
 void SerialPortHandler::disconnectCom()
 {
-//    QByteArray cmdStop;
-//    cmdStop.resize(5);
-//    cmdStop[0] = 0xAA;
-//    cmdStop[1] = 0x55;
-//    cmdStop[2] = 0x61;
-//    cmdStop[3] = 0x00;
-//    cmdStop[4] = 0x60;
-//    m_serialPort.write(cmdStop);
-//    m_serialPort.waitForBytesWritten();
     m_serialPort.close();
 }
 
@@ -143,6 +115,14 @@ void SerialPortHandler::startRecord(QString filename, int mode)
         if(0 == mode)
         {// Range Mode
             m_fstream << "norm_tof,norm_peak,norm_noise,int_num,atten_peak,atten_noise,ref_tof,temp_sensor_x100,temp_mcu_x100,raw_tof_mm,ctof,confidence,timestamp_ms,\n";
+        }
+        else if(1 == mode)
+        {// Single Pix Mode
+            for(int pixId = 1; pixId<=25; pixId++)
+            {
+                m_fstream << "pix_" << pixId << ",";
+            }
+            m_fstream << "\n";
         }
         else if(2 == mode)
         {// Histogram Mode
@@ -256,9 +236,24 @@ void SerialPortHandler::handleReadyRead()
             for (int row = 0; row < 5; ++row) {
                 for (int column = 0; column < 5; ++column) {
                     uint16_t val = uint8_t(m_frameData[4+row*10+column*2]) + (uint8_t(m_frameData[5+row*10+column*2])<<8);
-                    m_tableModelPtr->setData(m_tableModelPtr->index(row,column,QModelIndex()), QString::number(val));
+                    QStandardItem *item = new QStandardItem(QString::number(val));
+                    // 根据数值设置颜色，2200最红，0最蓝
+                    qreal ck = (qreal)val/2200.0;
+                    if(ck > 1)
+                    {
+                        ck = 1;
+                    }
+                    QColor backgroundColor(255*ck,0,(1-ck)*255);
+                    item->setData(backgroundColor, Qt::BackgroundRole);
+                    m_tableModelPtr->setItem(row, column, item);
+
+                    if(m_isRecording)
+                    {
+                        m_fstream << val << ",";
+                    }
                 }
             }
+            m_fstream << "\n";
         }
         else if(uint8_t(m_frameData[3])==0xA3)
         {// range raw data
