@@ -50,6 +50,14 @@ private slots:
 
     void on_pushButton_sampleRate_2_clicked();
 
+    void on_pushButton_footDetectParaConfig_clicked();
+
+    void on_pushButton_readConfig_clicked();
+
+    void on_pushButton_walkErrK_clicked();
+
+    void on_pushButton_distOffset_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

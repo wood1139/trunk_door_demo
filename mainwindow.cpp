@@ -289,3 +289,27 @@ void MainWindow::on_pushButton_sampleRate_2_clicked()
     m_serialPortReader.devSetLdTrigPwidth(pwidth);
 }
 
+
+void MainWindow::on_pushButton_footDetectParaConfig_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButton_readConfig_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButton_walkErrK_clicked()
+{
+
+}
+
+
+void MainWindow::on_pushButton_distOffset_clicked()
+{
+
+}
+
