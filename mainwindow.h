@@ -15,8 +15,6 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-#define DATA_WIN_SIZE 20
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -70,6 +68,11 @@ private:
     QValueAxis  *m_axisY;
 
     QStandardItemModel *m_tableModel;
+
+    uint8_t mParaBuf[1024];
+    SysConfigStruct mDevConfigStruct;
+
+    void dispDeviceConfig();
 
 public slots:
     void slotHandleLidarData(QByteArray frameData);

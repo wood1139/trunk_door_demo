@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMessageBox>
+#include <cstring>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -155,12 +156,14 @@ void MainWindow::showImg(int idx)
 
 void MainWindow::slotHandleLidarData(QByteArray frameData)
 {
-    if(uint8_t(frameData[3])==0xA4)
+    static uint8_t paraPackId = 0;
+
+    if(uint8_t(frameData[3])==DATA_ID_DETECT_STATUS)
     { // 脚踩信号
         m_timer.start();
         showImg(0);
     }
-    else if(uint8_t(frameData[3])==0x01)
+    else if(uint8_t(frameData[3])==ID_GET_VERSION)
     { // 版本号
         QString versionStr;
         for(int i=0; i<26; i++)
@@ -169,10 +172,9 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
         }
         ui->label_firmwareVersion->setText(versionStr);
     }
-    else if(uint8_t(frameData[3])==0x11)
+    else if(uint8_t(frameData[3])==ID_SAVE_SETTINGS)
     {
         QMessageBox messageBox;
-//        messageBox.setWindowTitle("保存配置");
         if(0 ==frameData[4])
         {
             messageBox.setText("保存成功");
@@ -183,6 +185,54 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
         }
         messageBox.exec();
     }
+    else if(uint8_t(frameData[3])==ID_READ_ALL_PARAMS)
+    {
+        uint8_t curId = frameData[4];
+        if(paraPackId == curId)
+        {
+            
+            for(int iByte=0; iByte<51; iByte++)
+            {
+                mParaBuf[paraPackId*51+iByte] = frameData[5+iByte];
+            }
+            paraPackId++;
+            if(20 == paraPackId)
+            {
+                std::memcpy(&mDevConfigStruct, mParaBuf, sizeof(SysConfigStruct));
+                dispDeviceConfig();
+                paraPackId = 0;
+            }
+        }
+        else
+        {
+            paraPackId = 0;
+        }
+    }
+}
+
+void MainWindow::dispDeviceConfig()
+{
+    ui->comboBox_hardlinePinSel->setItemData(mDevConfigStruct.pin_sel);
+    ui->comboBox_hardlinePinMode->setItemData(mDevConfigStruct.pin_mode;
+    if(mDevConfigStruct.is_ranging_enable)
+    {
+        ui->on_checkBox_rangeEnable_stateChanged->setCheckState(Qt::Checked);
+    }
+    else
+    {
+        ui->on_checkBox_rangeEnable_stateChanged->setCheckState(Qt::Unchecked);
+    }
+    ui->lineEdit_ldTrigPwidth->setText(QString::number(mDevConfigStruct.ld_trig_pwidth_100ps));
+    ui->lineEdit_sampleRate->setText(QString::number(mDevConfigStruct.sample_rate));
+    ui->lineEdit_hardlinePulseMs->setText(QString::number(mDevConfigStruct.hardline_pulse_ms));
+    ui->lineEdit_gndStableThMm->setText(QString::number(mDevConfigStruct.gnd_stable_th_mm));
+    ui->lineEdit_footStableThMm->setText(QString::number(mDevConfigStruct.foot_stable_th_mm));
+    ui->lineEdit_footThMinMm->setText(QString::number(mDevConfigStruct.valid_foot_th_min_mm));
+    ui->lineEdit_footThMaxMm->setText(QString::number(mDevConfigStruct.valid_foot_th_max_mm));
+    ui->lineEdit_dataWinSize->setText(QString::number(mDevConfigStruct.data_win_size));
+    ui->lineEdit_walkErrK->setText(QString::number(mDevConfigStruct.walk_err_k));
+    ui->lineEdit_distOffset->setText(QString::number(mDevConfigStruct.dist_offset_mm));
+
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -292,24 +342,34 @@ void MainWindow::on_pushButton_sampleRate_2_clicked()
 
 void MainWindow::on_pushButton_footDetectParaConfig_clicked()
 {
-
+    FootDetectParaStruct para;
+    para.gnd_stable_th_mm = ui->lineEdit_gndStableThMm->text().toInt();
+    para.foot_stable_th_mm = ui->lineEdit_footStableThMm->text().toInt();
+    para.valid_foot_th_min_mm = ui->lineEdit_footThMinMm->text().toInt();
+    para.valid_foot_th_max_mm = ui->lineEdit_footThMaxMm->text().toInt();
+    para.data_win_size = ui->lineEdit_dataWinSize->text().toInt();
+    m_serialPortReader.devSetFootDetectPara(para);
 }
 
 
 void MainWindow::on_pushButton_readConfig_clicked()
 {
-
+    m_serialPortReader.devReadAllPara();
 }
 
 
 void MainWindow::on_pushButton_walkErrK_clicked()
 {
-
+    int k = ui->lineEdit_walkErrK->text().toInt();
+    qDebug() << "walk err k=" << k;
+    m_serialPortReader.devSetWalkErrK(k);
 }
 
 
 void MainWindow::on_pushButton_distOffset_clicked()
 {
-
+    int offset = ui->lineEdit_distOffset->text().toInt();
+    qDebug() << "dist offset=" << offset;
+    m_serialPortReader.devSetDistOffset(offset);
 }
 

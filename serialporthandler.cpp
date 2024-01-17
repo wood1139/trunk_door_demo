@@ -458,3 +458,118 @@ void SerialPortHandler::devSaveConfig()
     }
 }
 
+void SerialPortHandler::devSetFootDetectPara(FootDetectParaStruct para)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(15);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 15;
+        cmd[3] = ID_FOOT_DETECT_PARA;
+        cmd[4] = para.gnd_stable_th_mm & 0xFF;
+        cmd[5] = (para.gnd_stable_th_mm>>8) & 0xFF;
+        cmd[6] = para.foot_stable_th_mm & 0xFF;
+        cmd[7] = (para.foot_stable_th_mm>>8) & 0xFF;
+        cmd[8] = para.valid_foot_th_min_mm & 0xFF;
+        cmd[9] = (para.valid_foot_th_min_mm>>8) & 0xFF;
+        cmd[10] = para.valid_foot_th_max_mm & 0xFF;
+        cmd[11] = (para.valid_foot_th_max_mm>>8) & 0xFF;
+        cmd[12] = para.data_win_size & 0xFF;
+        cmd[13] = (para.data_win_size>>8) & 0xFF;
+        cmd[14] = calSum(cmd.mid(0,14));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devReadAllPara()
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 6;
+        cmd[3] = ID_READ_ALL_PARAMS;
+        cmd[4] = 0;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSetWalkErrK(int k)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(7);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 7;
+        cmd[3] = ID_WALK_ERR_K;
+        cmd[4] = (uint16_t)k & 0xFF;
+        cmd[5] = ((uint16_t)k>>8) & 0xFF;
+        cmd[6] = calSum(cmd.mid(0,6));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSetDistOffset(int offset)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(7);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 7;
+        cmd[3] = ID_DIST_OFFSET;
+        cmd[4] = (uint16_t)offset & 0xFF;
+        cmd[5] = ((uint16_t)offset>>8) & 0xFF;
+        cmd[6] = calSum(cmd.mid(0,6));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSetLowPeakTh(int th)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(7);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 7;
+        cmd[3] = ID_LOW_PEAK_TH;
+        cmd[4] = (uint16_t)th & 0xFF;
+        cmd[5] = ((uint16_t)th>>8) & 0xFF;
+        cmd[6] = calSum(cmd.mid(0,6));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devSetDirtyDistTh(int th)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 6;
+        cmd[3] = ID_DIRTY_DIST_TH;
+        cmd[4] = (uint8_t)th;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+
