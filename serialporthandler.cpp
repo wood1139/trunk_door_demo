@@ -572,4 +572,21 @@ void SerialPortHandler::devSetDirtyDistTh(int th)
     }
 }
 
+void SerialPortHandler::devEraseFlash()
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 6;
+        cmd[3] = ID_FLASH_ERASE;
+        cmd[4] = 0;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
 

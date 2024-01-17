@@ -46,7 +46,7 @@ private slots:
 
     void on_pushButton_sampleRate_clicked();
 
-    void on_pushButton_sampleRate_2_clicked();
+    void on_pushButton_ldTrigPwidth_clicked();
 
     void on_pushButton_footDetectParaConfig_clicked();
 
@@ -55,6 +55,8 @@ private slots:
     void on_pushButton_walkErrK_clicked();
 
     void on_pushButton_distOffset_clicked();
+
+    void on_pushButton_eraseFlash_clicked();
 
 private:
     Ui::MainWindow *ui;

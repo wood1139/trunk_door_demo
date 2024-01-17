@@ -81,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent)
    {
         dir.mkpath(".");
    }
+
+   on_pushButton_refreshComList_clicked();
 }
 
 MainWindow::~MainWindow()
@@ -212,15 +214,16 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
 
 void MainWindow::dispDeviceConfig()
 {
-    ui->comboBox_hardlinePinSel->setItemData(mDevConfigStruct.pin_sel);
-    ui->comboBox_hardlinePinMode->setItemData(mDevConfigStruct.pin_mode;
+    qDebug() << "\n\n read device config done. ";
+    ui->comboBox_hardlinePinSel->setCurrentIndex(mDevConfigStruct.hardline_pin_sel);
+    ui->comboBox_hardlinePinMode->setCurrentIndex(mDevConfigStruct.hardline_pin_mode);
     if(mDevConfigStruct.is_ranging_enable)
     {
-        ui->on_checkBox_rangeEnable_stateChanged->setCheckState(Qt::Checked);
+        ui->checkBox_rangeEnable->setCheckState(Qt::Checked);
     }
     else
     {
-        ui->on_checkBox_rangeEnable_stateChanged->setCheckState(Qt::Unchecked);
+        ui->checkBox_rangeEnable->setCheckState(Qt::Unchecked);
     }
     ui->lineEdit_ldTrigPwidth->setText(QString::number(mDevConfigStruct.ld_trig_pwidth_100ps));
     ui->lineEdit_sampleRate->setText(QString::number(mDevConfigStruct.sample_rate));
@@ -332,7 +335,7 @@ void MainWindow::on_pushButton_sampleRate_clicked()
 }
 
 
-void MainWindow::on_pushButton_sampleRate_2_clicked()
+void MainWindow::on_pushButton_ldTrigPwidth_clicked()
 {
     int pwidth = ui->lineEdit_ldTrigPwidth->text().toInt();
     qDebug() << "ld trig pulse width =" << pwidth << "*100ps";
@@ -371,5 +374,11 @@ void MainWindow::on_pushButton_distOffset_clicked()
     int offset = ui->lineEdit_distOffset->text().toInt();
     qDebug() << "dist offset=" << offset;
     m_serialPortReader.devSetDistOffset(offset);
+}
+
+
+void MainWindow::on_pushButton_eraseFlash_clicked()
+{
+    m_serialPortReader.devEraseFlash();
 }
 

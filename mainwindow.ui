@@ -75,7 +75,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>660</y>
+        <y>580</y>
         <width>251</width>
         <height>28</height>
        </rect>
@@ -88,7 +88,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>690</y>
+        <y>610</y>
         <width>251</width>
         <height>28</height>
        </rect>
@@ -325,7 +325,7 @@
         <x>10</x>
         <y>290</y>
         <width>271</width>
-        <height>331</height>
+        <height>251</height>
        </rect>
       </property>
       <property name="title">
@@ -406,7 +406,7 @@
         <string>测距频率Hz</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton_sampleRate_2">
+      <widget class="QPushButton" name="pushButton_ldTrigPwidth">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -611,7 +611,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>630</y>
+        <y>550</y>
         <width>251</width>
         <height>28</height>
        </rect>
@@ -730,6 +730,19 @@
         <string>   实际距离</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_eraseFlash">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>690</y>
+        <width>251</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>擦除配置</string>
+      </property>
      </widget>
     </widget>
    </widget>

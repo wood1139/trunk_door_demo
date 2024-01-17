@@ -135,7 +135,7 @@ typedef enum
 
 typedef struct
 {
-	SysVi4302ModeEnum vi4302_mode;
+    int               vi4302_mode;
     uint8_t           is_feet_detect;
     uint8_t           hardline_pin_sel;        // hardline pin select: 0-none, 1-uart tx, 2-led1, 3-led2
     uint8_t           is_ranging_enable;
@@ -188,6 +188,7 @@ public:
     void devSetDistOffset(int offset);
     void devSetLowPeakTh(int th);
     void devSetDirtyDistTh(int th);
+    void devEraseFlash();
 
 private:
     uint8_t calSum(QByteArray data);
