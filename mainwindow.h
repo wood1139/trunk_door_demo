@@ -58,6 +58,10 @@ private slots:
 
     void on_pushButton_eraseFlash_clicked();
 
+    void on_pushButton_dirtyDistTh_clicked();
+
+    void on_pushButton_lowPeakTh_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

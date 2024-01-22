@@ -235,7 +235,8 @@ void MainWindow::dispDeviceConfig()
     ui->lineEdit_dataWinSize->setText(QString::number(mDevConfigStruct.data_win_size));
     ui->lineEdit_walkErrK->setText(QString::number(mDevConfigStruct.walk_err_k));
     ui->lineEdit_distOffset->setText(QString::number(mDevConfigStruct.dist_offset_mm));
-
+    ui->lineEdit_dirtyDistTh->setText(QString::number(mDevConfigStruct.dirty_dist_th_mm));
+    ui->lineEdit_lowPeakTh->setText(QString::number(mDevConfigStruct.low_peak_th));
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -380,5 +381,19 @@ void MainWindow::on_pushButton_distOffset_clicked()
 void MainWindow::on_pushButton_eraseFlash_clicked()
 {
     m_serialPortReader.devEraseFlash();
+}
+
+
+void MainWindow::on_pushButton_dirtyDistTh_clicked()
+{
+    int th = ui->lineEdit_dirtyDistTh->text().toInt();
+    m_serialPortReader.devSetDirtyDistTh(th);
+}
+
+
+void MainWindow::on_pushButton_lowPeakTh_clicked()
+{
+    int th = ui->lineEdit_lowPeakTh->text().toInt();
+    m_serialPortReader.devSetLowPeakTh(th);
 }
 
