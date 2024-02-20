@@ -397,3 +397,10 @@ void MainWindow::on_pushButton_lowPeakTh_clicked()
     m_serialPortReader.devSetLowPeakTh(th);
 }
 
+
+void MainWindow::on_pushButton_ldTrigNum_clicked()
+{
+    int trig_num = ui->lineEdit_ldTrigNum->text().toInt();
+    m_serialPortReader.devSetLdTrigNum(trig_num);
+}
+

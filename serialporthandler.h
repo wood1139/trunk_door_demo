@@ -178,6 +178,7 @@ public:
     void devSetHardLineConfig(int pin_sel, int pin_mode, int pwidth_ms);
     void devSetSampleRate(int sample_rate);
     void devSetLdTrigPwidth(int pwidth);
+    void devSetLdTrigNum(int trig_num);
     void devSoftReset();
     void devReadFirmwareVersion();
     void devRangingEnable(int en);

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V1.3.0</string>
+   <string>TOF调测工具V1.4.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabWidget">
@@ -325,7 +325,7 @@
         <x>10</x>
         <y>290</y>
         <width>271</width>
-        <height>241</height>
+        <height>291</height>
        </rect>
       </property>
       <property name="title">
@@ -423,7 +423,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>161</y>
+         <y>195</y>
          <width>111</width>
          <height>28</height>
         </rect>
@@ -436,7 +436,7 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>165</y>
+         <y>199</y>
          <width>131</width>
          <height>20</height>
         </rect>
@@ -446,7 +446,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>196</y>
+         <y>230</y>
          <width>111</width>
          <height>28</height>
         </rect>
@@ -459,7 +459,30 @@
        <property name="geometry">
         <rect>
          <x>130</x>
-         <y>200</y>
+         <y>234</y>
+         <width>131</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_ldTrigNum">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>160</y>
+         <width>111</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>打光次数</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_ldTrigNum">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>164</y>
          <width>131</width>
          <height>20</height>
         </rect>
@@ -747,9 +770,9 @@
      <widget class="QGroupBox" name="groupBox_7">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>540</y>
-        <width>271</width>
+        <x>760</x>
+        <y>190</y>
+        <width>251</width>
         <height>101</height>
        </rect>
       </property>
@@ -774,7 +797,7 @@
         <rect>
          <x>130</x>
          <y>30</y>
-         <width>131</width>
+         <width>111</width>
          <height>20</height>
         </rect>
        </property>
@@ -797,7 +820,7 @@
         <rect>
          <x>130</x>
          <y>64</y>
-         <width>131</width>
+         <width>111</width>
          <height>20</height>
         </rect>
        </property>
@@ -812,7 +835,7 @@
      <x>0</x>
      <y>0</y>
      <width>1413</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

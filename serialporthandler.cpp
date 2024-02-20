@@ -393,6 +393,24 @@ void SerialPortHandler::devSetLdTrigPwidth(int pwidth)
     }
 }
 
+void SerialPortHandler::devSetLdTrigNum(int trig_num)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(7);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x07;
+        cmd[3] = 0x0D;
+        cmd[4] = (uint16_t)trig_num & 0xFF;
+        cmd[5] = ((uint16_t)trig_num>>8) & 0xFF;
+        cmd[6] = calSum(cmd.mid(0,6));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
 void SerialPortHandler::devSoftReset()
 {
     QByteArray cmd;
