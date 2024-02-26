@@ -101,16 +101,21 @@ enum FrameIdEnum
     ID_RANGING_ENABLE           = 0x05, ID_RANGING_ENABLE_LEN           = 6,   ID_RANGING_ENABLE_LEN_ACK          = 6,
     ID_SAMPLE_RATE              = 0x06, ID_SAMPLE_RATE_LEN              = 7,   ID_SAMPLE_RATE_LEN_ACK             = 7,
     ID_LD_TRIG_PWIDTH           = 0x07, ID_LD_TRIG_PWIDTH_LEN           = 7,   ID_LD_TRIG_PWIDTH_LEN_ACK          = 7,
-	ID_FOOT_DETECT_PARA         = 0x08, ID_FOOT_DETECT_PARA_LEN         = 15,  ID_FOOT_DETECT_PARA_LEN_ACK        = 15,
-	ID_WALK_ERR_K               = 0x09, ID_WALK_ERR_K_LEN               = 7,   ID_WALK_ERR_K_LEN_ACK              = 7,
-	ID_DIST_OFFSET              = 0x0A, ID_DIST_OFFSET_LEN              = 7,   ID_DIST_OFFSET_LEN_ACK             = 7,
-	ID_LOW_PEAK_TH              = 0x0B, ID_LOW_PEAK_TH_LEN              = 7,   ID_LOW_PEAK_TH_LEN_ACK             = 7,
-	ID_DIRTY_DIST_TH            = 0x0C, ID_DIRTY_DIST_TH_LEN            = 6,   ID_DIRTY_DIST_TH_LEN_ACK           = 6,
-	ID_RESTORE_DEFAULT          = 0x10, ID_RESTORE_DEFAULT_LEN          = 5,   ID_RESTORE_DEFAULT_LEN_ACK         = 6,
+    ID_FOOT_DETECT_PARA         = 0x08, ID_FOOT_DETECT_PARA_LEN         = 15,  ID_FOOT_DETECT_PARA_LEN_ACK        = 15,
+    ID_WALK_ERR_K               = 0x09, ID_WALK_ERR_K_LEN               = 7,   ID_WALK_ERR_K_LEN_ACK              = 7,
+    ID_DIST_OFFSET              = 0x0A, ID_DIST_OFFSET_LEN              = 7,   ID_DIST_OFFSET_LEN_ACK             = 7,
+    ID_LOW_PEAK_TH              = 0x0B, ID_LOW_PEAK_TH_LEN              = 7,   ID_LOW_PEAK_TH_LEN_ACK             = 7,
+    ID_DIRTY_DIST_TH            = 0x0C, ID_DIRTY_DIST_TH_LEN            = 6,   ID_DIRTY_DIST_TH_LEN_ACK           = 6,
+    ID_LD_TRIG_NUM              = 0x0D, ID_LD_TRIG_NUM_LEN              = 7,   ID_LD_TRIG_NUM_LEN_ACK             = 7,
+    ID_READ_REG                 = 0x0E, ID_READ_REG_LEN                 = 7,   ID_READ_REG_LEN_ACK                = 8,
+    ID_WRITE_REG                = 0x0F, ID_WRITE_REG_LEN                = 8,   ID_WRITE_REG_LEN_ACK               = 8,
+    ID_RESTORE_DEFAULT          = 0x10, ID_RESTORE_DEFAULT_LEN          = 5,   ID_RESTORE_DEFAULT_LEN_ACK         = 6,
     ID_SAVE_SETTINGS            = 0x11, ID_SAVE_SETTINGS_LEN            = 5,   ID_SAVE_SETTINGS_LEN_ACK           = 6,
-	ID_FLASH_ERASE              = 0x12, ID_FLASH_ERASE_LEN              = 6,   ID_FLASH_ERASE_LEN_ACK             = 6,
+    ID_FLASH_ERASE              = 0x12, ID_FLASH_ERASE_LEN              = 6,   ID_FLASH_ERASE_LEN_ACK             = 6,
     ID_FLASH_BACKUP             = 0x13, ID_FLASH_BACKUP_LEN             = 13,  ID_FLASH_BACKUP_LEN_ACK            = 6,
-	ID_READ_ALL_PARAMS          = 0x14, ID_READ_ALL_PARAMS_LEN          = 6,   ID_READ_ALL_PARAMS_LEN_ACK         = 6,
+    ID_READ_ALL_PARAMS          = 0x14, ID_READ_ALL_PARAMS_LEN          = 6,   ID_READ_ALL_PARAMS_LEN_ACK         = 6,
+    ID_BVD_CALIB                = 0x20, ID_BVD_CALIB_LEN                = 5,   ID_BVD_CALIB_LEN_ACK               = 7,
+    ID_LED_ENABLE               = 0x21, ID_LED_ENABLE_LEN               = 6,   ID_LED_ENABLE_LEN_ACK              = 6,
 };
 
 enum DataIdEnum
@@ -154,8 +159,12 @@ typedef struct
     uint16_t          dist_offset_mm;          // 距离偏置
     uint16_t          low_peak_th;             // 当atten_peak小于low_peak_th时，认为测距无效
     uint8_t           dirty_dist_th_mm;        // 当测距值小于dirty_dist_th_mm时，判断近距离遮挡或脏污
-    uint8_t           dummy1;
-    uint16_t          dummy2;
+    uint8_t           vi4302_bvd_val;          // 初次上电标定的工作电压
+    uint8_t           vi4302_tdc_val;          // 初次上电标定的TDC参数
+    int8_t            vi4302_calib_tmpr;       // 标定时的温度，单位℃
+    uint16_t          vi4302_pulse_num;        // 一次探测的打光次数
+    uint8_t           led_enable;              // 投影光使能
+    uint8_t           dummy;
 }SysConfigStruct;
 
 
@@ -190,6 +199,10 @@ public:
     void devSetLowPeakTh(int th);
     void devSetDirtyDistTh(int th);
     void devEraseFlash();
+    void devBvdCalib();
+    void devReadReg(int reg_addr);
+    void devWriteReg(int reg_addr, int reg_val);
+    void devLedEnable(int en);
 
 private:
     uint8_t calSum(QByteArray data);

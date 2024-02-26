@@ -209,12 +209,12 @@ void SerialPortHandler::handleReadyRead()
                     if(nullptr != m_lineSeriesPtr)
                     {
                         m_lineSeriesPtr->replace(m_histData);
-                        int y_range = hist_data_max * 1.2;
-                        if(y_range < 20)
-                        {
-                            y_range = 20;
-                        }
-                        emit sigSetAxisRange(0, 2048, 0, y_range);
+//                        int y_range = hist_data_max * 1.2;
+//                        if(y_range < 20)
+//                        {
+//                            y_range = 20;
+//                        }
+//                        emit sigSetAxisRange(0, 2048, 0, y_range);
                     }
                     if(m_isRecording)
                     {
@@ -601,6 +601,76 @@ void SerialPortHandler::devEraseFlash()
         cmd[2] = 6;
         cmd[3] = ID_FLASH_ERASE;
         cmd[4] = 0;
+        cmd[5] = calSum(cmd.mid(0,5));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devBvdCalib()
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(ID_BVD_CALIB_LEN);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x05;
+        cmd[3] = ID_BVD_CALIB;
+        cmd[4] = calSum(cmd.mid(0,4));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devReadReg(int reg_addr)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(ID_READ_REG_LEN);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = ID_READ_REG_LEN;
+        cmd[3] = ID_READ_REG;
+        cmd[4] = (uint16_t)reg_addr & 0xFF;
+        cmd[5] = ((uint16_t)reg_addr>>8) & 0xFF;
+        cmd[6] = calSum(cmd.mid(0,ID_READ_REG_LEN-1));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devWriteReg(int reg_addr, int reg_val)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(ID_WRITE_REG_LEN);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = ID_WRITE_REG_LEN;
+        cmd[3] = ID_WRITE_REG;
+        cmd[4] = (uint16_t)reg_addr & 0xFF;
+        cmd[5] = ((uint16_t)reg_addr>>8) & 0xFF;
+        cmd[6] = (uint8_t)reg_val;
+        cmd[7] = calSum(cmd.mid(0,ID_WRITE_REG_LEN-1));
+        m_serialPort.write(cmd);
+        m_serialPort.waitForBytesWritten();
+    }
+}
+
+void SerialPortHandler::devLedEnable(int en)
+{
+    QByteArray cmd;
+    if(m_serialPort.isOpen())
+    {
+        cmd.resize(6);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 0x06;
+        cmd[3] = ID_LED_ENABLE;
+        cmd[4] = en;
         cmd[5] = calSum(cmd.mid(0,5));
         m_serialPort.write(cmd);
         m_serialPort.waitForBytesWritten();

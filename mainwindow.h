@@ -64,6 +64,14 @@ private slots:
 
     void on_pushButton_ldTrigNum_clicked();
 
+    void on_pushButton_bvdCalib_clicked();
+
+    void on_pushButton_readReg_clicked();
+
+    void on_pushButton_writeReg_clicked();
+
+    void on_checkBox_ledEnable_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

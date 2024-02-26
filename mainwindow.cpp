@@ -210,6 +210,20 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
             paraPackId = 0;
         }
     }
+    else if(uint8_t(frameData[3])==ID_BVD_CALIB)
+    {
+        int bvd_val = (uint8_t)frameData[4];
+        int bvd_temp = (int8_t)frameData[5];
+        ui->label_bvdVal->setText("0x24F:"+QString::number(bvd_val));
+        ui->label_bvdTemp->setText("temp:"+QString::number(bvd_temp));
+    }
+    else if(uint8_t(frameData[3])==ID_READ_REG)
+    {
+        int reg_addr = uint8_t(frameData[4]) + (uint8_t(frameData[5])<<8);
+        int reg_val = (uint8_t)frameData[6];
+        ui->lineEdit_regAddr->setText(QString::number(reg_addr, 16));
+        ui->lineEdit_regVal->setText(QString::number(reg_val));
+    }
 }
 
 void MainWindow::dispDeviceConfig()
@@ -237,6 +251,19 @@ void MainWindow::dispDeviceConfig()
     ui->lineEdit_distOffset->setText(QString::number(mDevConfigStruct.dist_offset_mm));
     ui->lineEdit_dirtyDistTh->setText(QString::number(mDevConfigStruct.dirty_dist_th_mm));
     ui->lineEdit_lowPeakTh->setText(QString::number(mDevConfigStruct.low_peak_th));
+    ui->lineEdit_ldTrigNum->setText(QString::number(mDevConfigStruct.vi4302_pulse_num));
+
+    ui->label_bvdVal->setText("0x24F:"+QString::number(mDevConfigStruct.vi4302_bvd_val));
+    ui->label_bvdTemp->setText("temp:"+QString::number(mDevConfigStruct.vi4302_calib_tmpr));
+
+    if(mDevConfigStruct.led_enable)
+    {
+        ui->checkBox_ledEnable->setCheckState(Qt::Checked);
+    }
+    else
+    {
+        ui->checkBox_ledEnable->setCheckState(Qt::Unchecked);
+    }
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -289,6 +316,7 @@ void MainWindow::on_pushButton_openDataDir_clicked()
 void MainWindow::on_pushButton_readFirmwareVersion_clicked()
 {
     m_serialPortReader.devReadFirmwareVersion();
+    ui->label_firmwareVersion->setText("");
 }
 
 
@@ -402,5 +430,46 @@ void MainWindow::on_pushButton_ldTrigNum_clicked()
 {
     int trig_num = ui->lineEdit_ldTrigNum->text().toInt();
     m_serialPortReader.devSetLdTrigNum(trig_num);
+}
+
+
+void MainWindow::on_pushButton_bvdCalib_clicked()
+{
+    ui->label_bvdVal->setText("0x24F:");
+    ui->label_bvdTemp->setText("temp:");
+    m_serialPortReader.devBvdCalib();
+}
+
+
+void MainWindow::on_pushButton_readReg_clicked()
+{
+    bool ok;
+    int reg_addr = ui->lineEdit_regAddr->text().toInt(&ok, 16);
+    ui->lineEdit_regVal->setText("");
+    m_serialPortReader.devReadReg(reg_addr);
+    qDebug() << "read reg: addr = " << reg_addr;
+}
+
+
+void MainWindow::on_pushButton_writeReg_clicked()
+{
+    bool ok;
+    int reg_addr = ui->lineEdit_regAddr->text().toInt(&ok, 16);
+    int reg_val = ui->lineEdit_regVal->text().toInt();
+    m_serialPortReader.devWriteReg(reg_addr, reg_val);
+    qDebug() << "write reg: addr = " << reg_addr << "val = " << reg_val;
+}
+
+
+void MainWindow::on_checkBox_ledEnable_stateChanged(int arg1)
+{
+    if(arg1)
+    {
+        m_serialPortReader.devLedEnable(1);
+    }
+    else
+    {
+        m_serialPortReader.devLedEnable(0);
+    }
 }
 

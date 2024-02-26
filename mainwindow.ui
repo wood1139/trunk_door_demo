@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V1.4.0</string>
+   <string>TOF调测工具V1.5.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabWidget">
@@ -31,13 +31,6 @@
       <string> 演示</string>
      </attribute>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="pushButton_test">
-        <property name="text">
-         <string>钥匙靠近</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_pic">
         <property name="text">
@@ -45,19 +38,26 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="pushButton_test">
+        <property name="text">
+         <string>钥匙靠近</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
     <widget class="QWidget" name="tabTest">
      <attribute name="title">
-      <string>TOF测试</string>
+      <string>配置</string>
      </attribute>
      <widget class="QTableView" name="tableView">
       <property name="geometry">
        <rect>
         <x>1030</x>
-        <y>20</y>
+        <y>30</y>
         <width>321</width>
-        <height>231</height>
+        <height>241</height>
        </rect>
       </property>
      </widget>
@@ -103,7 +103,7 @@
         <x>760</x>
         <y>20</y>
         <width>251</width>
-        <height>161</height>
+        <height>141</height>
        </rect>
       </property>
       <property name="title">
@@ -173,7 +173,7 @@
         <rect>
          <x>110</x>
          <y>90</y>
-         <width>131</width>
+         <width>61</width>
          <height>20</height>
         </rect>
        </property>
@@ -181,9 +181,9 @@
       <widget class="QPushButton" name="pushButton_hardlineConfig">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>120</y>
-         <width>231</width>
+         <x>180</x>
+         <y>86</y>
+         <width>61</width>
          <height>28</height>
         </rect>
        </property>
@@ -325,7 +325,7 @@
         <x>10</x>
         <y>290</y>
         <width>271</width>
-        <height>291</height>
+        <height>271</height>
        </rect>
       </property>
       <property name="title">
@@ -488,6 +488,25 @@
         </rect>
        </property>
       </widget>
+      <widget class="QCheckBox" name="checkBox_ledEnable">
+       <property name="geometry">
+        <rect>
+         <x>120</x>
+         <y>50</y>
+         <width>91</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="text">
+        <string>LED使能</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_5">
       <property name="geometry">
@@ -643,11 +662,238 @@
        <string>读取配置</string>
       </property>
      </widget>
-     <widget class="QGroupBox" name="groupBox_6">
+     <widget class="QPushButton" name="pushButton_eraseFlash">
+      <property name="geometry">
+       <rect>
+        <x>160</x>
+        <y>690</y>
+        <width>111</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>擦除配置</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_7">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>170</y>
+        <width>251</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>脏污检测</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_dirtyDistTh">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>26</y>
+         <width>111</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string> 近距离阈值mm</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_dirtyDistTh">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>30</y>
+         <width>111</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_lowPeakTh">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>60</y>
+         <width>111</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string> 强度阈值</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_lowPeakTh">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>64</y>
+         <width>111</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>570</y>
+        <width>271</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>BVD标定</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_bvdCalib">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>111</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>标定</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_16">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>10</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>标定结果</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_bvdVal">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>30</y>
+         <width>131</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0x24F:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_bvdTemp">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>50</y>
+         <width>131</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>temp:</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_9">
       <property name="geometry">
        <rect>
         <x>300</x>
         <y>170</y>
+        <width>441</width>
+        <height>101</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>寄存器操作</string>
+      </property>
+      <widget class="QLabel" name="label_17">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>111</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>寄存器地址  0x</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_regAddr">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>30</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_regVal">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>30</y>
+         <width>81</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_18">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>30</y>
+         <width>91</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>寄存器值</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_readReg">
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>60</y>
+         <width>111</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>读寄存器</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_writeReg">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>60</y>
+         <width>111</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>写寄存器</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>数据采集</string>
+     </attribute>
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>40</y>
         <width>441</width>
         <height>101</height>
        </rect>
@@ -751,78 +997,6 @@
        </property>
        <property name="text">
         <string>   实际距离</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QPushButton" name="pushButton_eraseFlash">
-      <property name="geometry">
-       <rect>
-        <x>160</x>
-        <y>690</y>
-        <width>111</width>
-        <height>28</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>擦除配置</string>
-      </property>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_7">
-      <property name="geometry">
-       <rect>
-        <x>760</x>
-        <y>190</y>
-        <width>251</width>
-        <height>101</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>脏污检测</string>
-      </property>
-      <widget class="QPushButton" name="pushButton_dirtyDistTh">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>26</y>
-         <width>111</width>
-         <height>28</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string> 近距离阈值mm</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_dirtyDistTh">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>30</y>
-         <width>111</width>
-         <height>20</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="pushButton_lowPeakTh">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>60</y>
-         <width>111</width>
-         <height>28</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string> 强度阈值</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="lineEdit_lowPeakTh">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>64</y>
-         <width>111</width>
-         <height>20</height>
-        </rect>
        </property>
       </widget>
      </widget>
