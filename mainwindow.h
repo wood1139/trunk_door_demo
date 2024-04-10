@@ -88,6 +88,9 @@ private:
     uint8_t mParaBuf[1024];
     SysConfigStruct mDevConfigStruct;
 
+    int mDistBuf[1024];
+    int mDistFrameCnt;
+
     void dispDeviceConfig();
 
 public slots:
@@ -95,5 +98,6 @@ public slots:
     void slotSwitchImg();
     void slotSetAxisRange(int xmin, int xmax, int ymin, int ymax);
     void slotRecordStop();
+    void slotProcDist(int mm);
 };
 #endif // MAINWINDOW_H

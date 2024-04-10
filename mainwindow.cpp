@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigLidarData, this, &MainWindow::slotHandleLidarData);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigSetAxisRange, this, &MainWindow::slotSetAxisRange);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigRecordStop, this, &MainWindow::slotRecordStop);
+    QObject::connect(&m_serialPortReader, &SerialPortHandler::sigProcDist, this, &MainWindow::slotProcDist);
     qDebug() << "app start!";
 
     showImg(0);
@@ -88,6 +89,8 @@ MainWindow::MainWindow(QWidget *parent)
    }
 
    on_pushButton_refreshComList_clicked();
+
+   mDistFrameCnt = 0;
 }
 
 MainWindow::~MainWindow()
@@ -152,6 +155,47 @@ void MainWindow::slotSetAxisRange(int xmin, int xmax, int ymin, int ymax)
 void MainWindow::slotRecordStop()
 {
     ui->pushButton_record->setText("开始录制");
+}
+
+void MainWindow::slotProcDist(int mm)
+{
+    int win_len = ui->lineEdit_distWinLen->text().toInt();
+    if(win_len > 1204)
+    {
+        ui->lineEdit_distWinLen->setText("1024");
+        win_len = 1024;
+    }
+    if(win_len <= 0)
+    {
+        ui->lineEdit_distWinLen->setText("100");
+        win_len = 100;
+    }
+    mDistBuf[mDistFrameCnt++] = mm;
+    if(mDistFrameCnt>=win_len)
+    {
+        int distMean = 0;
+        int distSum = 0;
+        int distSum1 = 0;
+        int distStd = 0;
+        mDistFrameCnt = 0;
+        for(int i = 0; i < win_len; i++)
+        {
+            distSum += mDistBuf[i];
+        }
+        distMean = distSum / win_len;
+
+        for(int i = 0; i < win_len; i++)
+        {
+            distSum1 += (mDistBuf[i]-distMean)*(mDistBuf[i]-distMean);
+        }
+
+        distStd = std::sqrt(distSum1/win_len);
+
+        ui->label_distMean->setText(QString::number(distMean));
+        ui->label_distStd->setText(QString::number(distStd));
+    }
+
+
 }
 
 void MainWindow::showImg(int idx)

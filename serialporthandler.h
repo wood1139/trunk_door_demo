@@ -244,6 +244,7 @@ signals:
     void sigLidarData(QByteArray frameData);
     void sigSetAxisRange(int xmin, int xmax, int ymin, int ymax);
     void sigRecordStop();
+    void sigProcDist(int mm);
 };
 
 #endif // SERIALPORTHANDLER_H

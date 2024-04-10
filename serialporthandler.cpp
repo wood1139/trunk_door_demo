@@ -284,6 +284,7 @@ void SerialPortHandler::handleData()
                                 "ctof=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
                                 "confidence=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
                                 "timestamp=" << QString("%1").arg(m_rangeRawData.timestamp_ms, width);
+        emit sigProcDist(m_rangeRawData.ctof);
         if(m_isRecording && m_frameCnt>=0)
         {
             m_fstream << m_rangeRawData.norm_tof << "," <<
