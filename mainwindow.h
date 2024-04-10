@@ -94,5 +94,6 @@ public slots:
     void slotHandleLidarData(QByteArray frameData);
     void slotSwitchImg();
     void slotSetAxisRange(int xmin, int xmax, int ymin, int ymax);
+    void slotRecordStop();
 };
 #endif // MAINWINDOW_H

@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
-#include <QDateTime>
 #include <QDir>
 #include <QDesktopServices>
 #include <QUrl>
@@ -17,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::slotSwitchImg);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigLidarData, this, &MainWindow::slotHandleLidarData);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigSetAxisRange, this, &MainWindow::slotSetAxisRange);
+    QObject::connect(&m_serialPortReader, &SerialPortHandler::sigRecordStop, this, &MainWindow::slotRecordStop);
     qDebug() << "app start!";
 
     showImg(0);
@@ -75,6 +75,11 @@ MainWindow::MainWindow(QWidget *parent)
 
    ui->lineEdit_hardlinePulseMs->setText("50");
 
+   ui->lineEdit_setFramNum->setText("200");
+   ui->lineEdit_pulseNumList->setText("150 500 1000 1500");
+   ui->lineEdit_scanPulseNumListAtBvd->setText("235");
+   ui->lineEdit_bvdList->setText("225 227 229 231 235 237 239");
+   ui->lineEdit_scanBvdAtPulseNum->setText("500");
 
    QDir dir("data");
    if (!dir.exists())
@@ -142,6 +147,11 @@ void MainWindow::slotSetAxisRange(int xmin, int xmax, int ymin, int ymax)
 {
     m_axisX->setRange(xmin, xmax);
     m_axisY->setRange(ymin, ymax);
+}
+
+void MainWindow::slotRecordStop()
+{
+    ui->pushButton_record->setText("开始录制");
 }
 
 void MainWindow::showImg(int idx)
@@ -279,13 +289,32 @@ void MainWindow::on_comboBox_mode_activated(int index)
 
 void MainWindow::on_pushButton_record_clicked()
 {
+    QStringList tmpStrList;
     QString mode = ui->comboBox_mode->currentText();
-    QStringList words = mode.split(" ");
-    QString modeStr = words[0];
-    QDateTime currentDateTime = QDateTime::currentDateTime();
-    QString formattedDateTime = currentDateTime.toString("yyyyMMddhhmmss");
-    QString filename = "data/mode_" + modeStr + "-realdist_" + ui->lineEdit_realDist->text() + "-ref_" + ui->lineEdit_ref->text() + "-time_" + formattedDateTime + ".csv";
-    qDebug() << filename;
+    tmpStrList = mode.split(" ");
+    QString modeStr = tmpStrList[0];
+
+    QString pulseNumListStr = ui->lineEdit_pulseNumList->text();
+    tmpStrList = pulseNumListStr.split(" ");
+    QList<int> pulseNumList;
+    foreach(const QString &str, tmpStrList)
+    {
+        pulseNumList.append(str.toInt());
+    }
+    int atBvd = ui->lineEdit_scanPulseNumListAtBvd->text().toInt();
+
+    QString bvdListStr = ui->lineEdit_bvdList->text();
+    tmpStrList = bvdListStr.split(" ");
+    QList<int> bvdList;
+    foreach(const QString &str, tmpStrList)
+    {
+        bvdList.append(str.toInt());
+    }
+    int atPulseNum = ui->lineEdit_scanBvdAtPulseNum->text().toInt();
+
+    int frameNum = ui->lineEdit_setFramNum->text().toInt();
+
+    QString filenamePrefix = "data/mode_" + modeStr + "-realdist_" + ui->lineEdit_realDist->text() + "-ref_" + ui->lineEdit_ref->text();
 
     if(m_serialPortReader.isRecording())
     {
@@ -294,7 +323,7 @@ void MainWindow::on_pushButton_record_clicked()
     }
     else
     {
-        m_serialPortReader.startRecord(filename, ui->comboBox_mode->currentIndex());
+        m_serialPortReader.startRecord(filenamePrefix, ui->comboBox_mode->currentIndex(), pulseNumList, atBvd, bvdList, atPulseNum, frameNum);
         ui->pushButton_record->setText("停止录制");
     }
 }

@@ -179,7 +179,7 @@ public:
     QStringList scanComList();
     bool isConnected();
     void setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr);
-    void startRecord(QString filename, int mode);
+    void startRecord(QString filenamePrefix, int mode, QList<int> pulseNumList, int atBvd, QList<int> bvdList, int atPulseNum, int frameNum);
     void stopRecord();
     bool isRecording();
 
@@ -206,6 +206,8 @@ public:
 
 private:
     uint8_t calSum(QByteArray data);
+    void scheduleRecord();
+    void handleData();
 
 private slots:
     void handleReadyRead();
@@ -227,9 +229,21 @@ private:
     QFile m_hfile;
     QTextStream m_fstream;
 
+    QString m_filenamePrefix;
+    QList<int> m_pulseNumList;
+    int m_atBvd;
+    QList<int> m_bvdList;
+    int m_atPulseNum;
+    int m_frameNum;
+    int m_pulseNumIdx;
+    int m_bvdIdx;
+    int m_frameCnt;
+
+
 signals:
     void sigLidarData(QByteArray frameData);
     void sigSetAxisRange(int xmin, int xmax, int ymin, int ymax);
+    void sigRecordStop();
 };
 
 #endif // SERIALPORTHANDLER_H

@@ -53,6 +53,7 @@
 #include <QCoreApplication>
 #include<QDebug>
 #include <QSerialPortInfo>
+#include <QDateTime>
 
 SerialPortHandler::SerialPortHandler(QObject *parent) :
     QObject(parent)
@@ -103,20 +104,61 @@ void SerialPortHandler::setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tab
     m_tableModelPtr = tabPtr;
 }
 
-void SerialPortHandler::startRecord(QString filename, int mode)
+void SerialPortHandler::startRecord(QString filenamePrefix, int mode, QList<int> pulseNumList, int atBvd, QList<int> bvdList, int atPulseNum, int frameNum)
 {
+    m_filenamePrefix = filenamePrefix;
+    m_mode = mode;
+    m_pulseNumList = pulseNumList;
+    m_atBvd = atBvd;
+    m_bvdList = bvdList;
+    m_atPulseNum = atPulseNum;
+    m_frameNum = frameNum;
+
+    m_pulseNumIdx = 0;
+    m_bvdIdx = 0;
+
+    scheduleRecord();
+}
+
+void SerialPortHandler::scheduleRecord()
+{
+    int pulseNum, bvd;
+    if(m_pulseNumIdx < m_pulseNumList.size())
+    {
+        pulseNum = m_pulseNumList[m_pulseNumIdx];
+        bvd = m_atBvd;
+        m_pulseNumIdx++;
+    }
+    else if(m_bvdIdx < m_bvdList.size())
+    {
+        pulseNum = m_atPulseNum;
+        bvd = m_bvdList[m_bvdIdx];
+        m_bvdIdx++;
+    }
+    else
+    {
+        stopRecord();
+        emit sigRecordStop();
+        return;
+    }
+
+    devSetLdTrigNum(pulseNum);
+    devWriteReg(0x24f, bvd);
+
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QString formattedDateTime = currentDateTime.toString("yyyyMMddhhmmss");
+
+    QString filename = m_filenamePrefix+"-pulsenum_"+QString::number(pulseNum)+"-bvd_"+QString::number(bvd)+"-time_"+formattedDateTime+".csv";
     m_hfile.setFileName(filename);
     if (m_hfile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        m_mode = mode;
         m_fstream.setDevice(&m_hfile);
-        m_isRecording = true;
 
-        if(0 == mode)
+        if(0 == m_mode)
         {// Range Mode
             m_fstream << "norm_tof,norm_peak,norm_noise,int_num,atten_peak,atten_noise,ref_tof,temp_sensor_x100,temp_mcu_x100,raw_tof_mm,ctof,confidence,timestamp_ms,\n";
         }
-        else if(1 == mode)
+        else if(1 == m_mode)
         {// Single Pix Mode
             for(int pixId = 1; pixId<=25; pixId++)
             {
@@ -124,10 +166,148 @@ void SerialPortHandler::startRecord(QString filename, int mode)
             }
             m_fstream << "\n";
         }
-        else if(2 == mode)
+        else if(2 == m_mode)
         {// Histogram Mode
             m_fstream << "idx,data,\n";
         }
+
+        m_frameCnt = -2;  // 丢弃前2帧，可能由于切换参数数据不稳定
+        m_isRecording = true;
+    }
+}
+
+void SerialPortHandler::handleData()
+{
+    static uint8_t pack_id = 0;
+    static int hist_data_max = 0;
+
+    if(uint8_t(m_frameData[3])==0xA1)
+    {// histogram data
+        if(0 == pack_id)
+        {
+            m_histData.clear();
+            hist_data_max = 0;
+        }
+        if(uint8_t(m_frameData[4])==pack_id)
+        {
+            for(int i=0; i<128; i++)
+            {
+                m_histData.append(QPointF(pack_id*128+i, uint8_t(m_frameData[5+i])));
+                if(uint8_t(m_frameData[5+i])>hist_data_max)
+                {
+                    hist_data_max = m_frameData[5+i];
+                }
+            }
+            pack_id++;
+            if(pack_id == 2048/128)
+            {
+                pack_id = 0;
+                if(nullptr != m_lineSeriesPtr)
+                {
+                    m_lineSeriesPtr->replace(m_histData);
+//                        int y_range = hist_data_max * 1.2;
+//                        if(y_range < 20)
+//                        {
+//                            y_range = 20;
+//                        }
+//                        emit sigSetAxisRange(0, 2048, 0, y_range);
+                }
+                if(m_isRecording && m_frameCnt>=0)
+                {
+                    for(int i=0; i<2048; i++)
+                    {
+                        m_fstream << m_histData[i].x() << "," << m_histData[i].y() << ",\n";
+                    }
+                }
+            }
+        }
+        else
+        {
+            // something went wrong
+            pack_id = 0;
+        }
+    }
+    else if(uint8_t(m_frameData[3])==0xA2)
+    {// sigle pixel data
+        for (int row = 0; row < 5; ++row) {
+            for (int column = 0; column < 5; ++column) {
+                uint16_t val = uint8_t(m_frameData[4+row*10+column*2]) + (uint8_t(m_frameData[5+row*10+column*2])<<8);
+                QStandardItem *item = new QStandardItem(QString::number(val));
+                // 根据数值设置颜色，2200最红，0最蓝
+                qreal ck = (qreal)val/2200.0;
+                if(ck > 1)
+                {
+                    ck = 1;
+                }
+                QColor backgroundColor(255*ck,0,(1-ck)*255);
+                item->setData(backgroundColor, Qt::BackgroundRole);
+                m_tableModelPtr->setItem(row, column, item);
+
+                if(m_isRecording && m_frameCnt>=0)
+                {
+                    m_fstream << val << ",";
+                }
+            }
+        }
+        if(m_isRecording && m_frameCnt>=0)
+        {
+            m_fstream << "\n";
+        }
+    }
+    else if(uint8_t(m_frameData[3])==0xA3)
+    {// range raw data
+        m_rangeRawData.norm_tof = uint8_t(m_frameData[4]) + (uint8_t(m_frameData[5])<<8);
+        m_rangeRawData.norm_peak = uint8_t(m_frameData[6]) + (uint8_t(m_frameData[7])<<8);
+        m_rangeRawData.norm_noise = uint8_t(m_frameData[8]) + (uint8_t(m_frameData[9])<<8) + (uint8_t(m_frameData[10])<<16);
+        m_rangeRawData.int_num = uint8_t(m_frameData[11]) + (uint8_t(m_frameData[12])<<8);
+        m_rangeRawData.atten_peak = uint8_t(m_frameData[13]) + (uint8_t(m_frameData[14])<<8);
+        m_rangeRawData.atten_noise = uint8_t(m_frameData[15]) + (uint8_t(m_frameData[16])<<8) + (uint8_t(m_frameData[17])<<16);
+        m_rangeRawData.ref_tof = uint8_t(m_frameData[18]) + (uint8_t(m_frameData[19])<<8);
+        m_rangeRawData.temp_sensor_x100 = int16_t(uint16_t(uint8_t(m_frameData[20]) + (uint8_t(m_frameData[21])<<8)));
+        m_rangeRawData.temp_mcu_x100 = int16_t(uint16_t(uint8_t(m_frameData[22]) + (uint8_t(m_frameData[23])<<8)));
+        m_rangeRawData.raw_tof_mm = int16_t(uint16_t(uint8_t(m_frameData[24]) + (uint8_t(m_frameData[25])<<8)));
+        m_rangeRawData.ctof = uint8_t(m_frameData[26]) + (uint8_t(m_frameData[27])<<8);
+        m_rangeRawData.confidence = uint8_t(m_frameData[28]);
+        m_rangeRawData.timestamp_ms = uint8_t(m_frameData[29]) + (uint8_t(m_frameData[30])<<8) + (uint8_t(m_frameData[31])<<16) + (uint8_t(m_frameData[32])<<16);
+
+        int width = 5;
+        qDebug().noquote() <<   "ntof=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
+                                "npeak=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
+                                "nnoise=" << QString("%1").arg(m_rangeRawData.norm_noise, 3) <<
+                                "int_num=" << QString("%1").arg(m_rangeRawData.int_num, 3) <<
+                                "apeak=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
+                                "anoise=" << QString("%1").arg(m_rangeRawData.atten_noise, 3) <<
+                                "ref_tof=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
+                                "temp_sensor=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, 4) <<
+                                "temp_mcu=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, 4) <<
+                                "raw_tof_mm=" << QString("%1").arg(m_rangeRawData.raw_tof_mm, width) <<
+                                "ctof=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
+                                "confidence=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
+                                "timestamp=" << QString("%1").arg(m_rangeRawData.timestamp_ms, width);
+        if(m_isRecording && m_frameCnt>=0)
+        {
+            m_fstream << m_rangeRawData.norm_tof << "," <<
+                         m_rangeRawData.norm_peak << "," <<
+                         m_rangeRawData.norm_noise << "," <<
+                         m_rangeRawData.int_num << "," <<
+                         m_rangeRawData.atten_peak << "," <<
+                         m_rangeRawData.atten_noise << "," <<
+                         m_rangeRawData.ref_tof << "," <<
+                         m_rangeRawData.temp_sensor_x100 << "," <<
+                         m_rangeRawData.temp_mcu_x100 << "," <<
+                         m_rangeRawData.raw_tof_mm << "," <<
+                         m_rangeRawData.ctof << "," <<
+                         m_rangeRawData.confidence << "," <<
+                         m_rangeRawData.timestamp_ms << ",\n";
+        }
+    }
+
+    m_frameCnt++;
+    if(m_frameCnt >= m_frameNum)
+    {
+        m_isRecording = false;
+        m_hfile.close();
+        scheduleRecord();
     }
 }
 
@@ -154,9 +334,6 @@ uint8_t SerialPortHandler::calSum(QByteArray data)
 
 void SerialPortHandler::handleReadyRead()
 {
-    static uint8_t pack_id = 0;
-    static int hist_data_max = 0;
-
     m_readData.append(m_serialPort.readAll());
 
     while(m_readData.size()>=5)
@@ -185,125 +362,9 @@ void SerialPortHandler::handleReadyRead()
         m_frameData = m_readData.mid(0, len);
         m_readData.remove(0, len);
 
-        if(uint8_t(m_frameData[3])==0xA1)
-        {// histogram data
-            if(0 == pack_id)
-            {
-                m_histData.clear();
-                hist_data_max = 0;
-            }
-            if(uint8_t(m_frameData[4])==pack_id)
-            {
-                for(int i=0; i<128; i++)
-                {
-                    m_histData.append(QPointF(pack_id*128+i, uint8_t(m_frameData[5+i])));
-                    if(uint8_t(m_frameData[5+i])>hist_data_max)
-                    {
-                        hist_data_max = m_frameData[5+i];
-                    }
-                }
-                pack_id++;
-                if(pack_id == 2048/128)
-                {
-                    pack_id = 0;
-                    if(nullptr != m_lineSeriesPtr)
-                    {
-                        m_lineSeriesPtr->replace(m_histData);
-//                        int y_range = hist_data_max * 1.2;
-//                        if(y_range < 20)
-//                        {
-//                            y_range = 20;
-//                        }
-//                        emit sigSetAxisRange(0, 2048, 0, y_range);
-                    }
-                    if(m_isRecording)
-                    {
-                        for(int i=0; i<2048; i++)
-                        {
-                            m_fstream << m_histData[i].x() << "," << m_histData[i].y() << ",\n";
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // something went wrong
-                pack_id = 0;
-            }
-        }
-        else if(uint8_t(m_frameData[3])==0xA2)
-        {// sigle pixel data
-            for (int row = 0; row < 5; ++row) {
-                for (int column = 0; column < 5; ++column) {
-                    uint16_t val = uint8_t(m_frameData[4+row*10+column*2]) + (uint8_t(m_frameData[5+row*10+column*2])<<8);
-                    QStandardItem *item = new QStandardItem(QString::number(val));
-                    // 根据数值设置颜色，2200最红，0最蓝
-                    qreal ck = (qreal)val/2200.0;
-                    if(ck > 1)
-                    {
-                        ck = 1;
-                    }
-                    QColor backgroundColor(255*ck,0,(1-ck)*255);
-                    item->setData(backgroundColor, Qt::BackgroundRole);
-                    m_tableModelPtr->setItem(row, column, item);
-
-                    if(m_isRecording)
-                    {
-                        m_fstream << val << ",";
-                    }
-                }
-            }
-            if(m_isRecording)
-            {
-                m_fstream << "\n";
-            }
-        }
-        else if(uint8_t(m_frameData[3])==0xA3)
-        {// range raw data
-            m_rangeRawData.norm_tof = uint8_t(m_frameData[4]) + (uint8_t(m_frameData[5])<<8);
-            m_rangeRawData.norm_peak = uint8_t(m_frameData[6]) + (uint8_t(m_frameData[7])<<8);
-            m_rangeRawData.norm_noise = uint8_t(m_frameData[8]) + (uint8_t(m_frameData[9])<<8) + (uint8_t(m_frameData[10])<<16);
-            m_rangeRawData.int_num = uint8_t(m_frameData[11]) + (uint8_t(m_frameData[12])<<8);
-            m_rangeRawData.atten_peak = uint8_t(m_frameData[13]) + (uint8_t(m_frameData[14])<<8);
-            m_rangeRawData.atten_noise = uint8_t(m_frameData[15]) + (uint8_t(m_frameData[16])<<8) + (uint8_t(m_frameData[17])<<16);
-            m_rangeRawData.ref_tof = uint8_t(m_frameData[18]) + (uint8_t(m_frameData[19])<<8);
-            m_rangeRawData.temp_sensor_x100 = int16_t(uint16_t(uint8_t(m_frameData[20]) + (uint8_t(m_frameData[21])<<8)));
-            m_rangeRawData.temp_mcu_x100 = int16_t(uint16_t(uint8_t(m_frameData[22]) + (uint8_t(m_frameData[23])<<8)));
-            m_rangeRawData.raw_tof_mm = int16_t(uint16_t(uint8_t(m_frameData[24]) + (uint8_t(m_frameData[25])<<8)));
-            m_rangeRawData.ctof = uint8_t(m_frameData[26]) + (uint8_t(m_frameData[27])<<8);
-            m_rangeRawData.confidence = uint8_t(m_frameData[28]);
-            m_rangeRawData.timestamp_ms = uint8_t(m_frameData[29]) + (uint8_t(m_frameData[30])<<8) + (uint8_t(m_frameData[31])<<16) + (uint8_t(m_frameData[32])<<16);
-
-            int width = 5;
-            qDebug().noquote() <<   "ntof=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
-                                    "npeak=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
-                                    "nnoise=" << QString("%1").arg(m_rangeRawData.norm_noise, 3) <<
-                                    "int_num=" << QString("%1").arg(m_rangeRawData.int_num, 3) <<
-                                    "apeak=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
-                                    "anoise=" << QString("%1").arg(m_rangeRawData.atten_noise, 3) <<
-                                    "ref_tof=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
-                                    "temp_sensor=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, 4) <<
-                                    "temp_mcu=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, 4) <<
-                                    "raw_tof_mm=" << QString("%1").arg(m_rangeRawData.raw_tof_mm, width) <<
-                                    "ctof=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
-                                    "confidence=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
-                                    "timestamp=" << QString("%1").arg(m_rangeRawData.timestamp_ms, width);
-            if(m_isRecording)
-            {
-                m_fstream << m_rangeRawData.norm_tof << "," <<
-                             m_rangeRawData.norm_peak << "," <<
-                             m_rangeRawData.norm_noise << "," <<
-                             m_rangeRawData.int_num << "," <<
-                             m_rangeRawData.atten_peak << "," <<
-                             m_rangeRawData.atten_noise << "," <<
-                             m_rangeRawData.ref_tof << "," <<
-                             m_rangeRawData.temp_sensor_x100 << "," <<
-                             m_rangeRawData.temp_mcu_x100 << "," <<
-                             m_rangeRawData.raw_tof_mm << "," <<
-                             m_rangeRawData.ctof << "," <<
-                             m_rangeRawData.confidence << "," <<
-                             m_rangeRawData.timestamp_ms << ",\n";
-            }
+        if(uint8_t(m_frameData[3])>=0xA0)
+        {
+            handleData();
         }
         else
         {
