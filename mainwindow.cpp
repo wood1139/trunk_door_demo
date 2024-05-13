@@ -120,6 +120,27 @@ void MainWindow::on_pushButton_connectCom_clicked()
 }
 
 
+void MainWindow::on_pushButton_connectComLin_clicked()
+{
+    if(m_serialPortReader.isConnectedLin())
+    {
+        m_serialPortReader.disconnectComLin();
+    }
+    else
+    {
+        m_serialPortReader.connectComLin(ui->comboBox_comListLin->currentText(), ui->lineEdit_baudrateLin->text().toInt());
+    }
+
+    if(m_serialPortReader.isConnectedLin())
+    {
+        ui->pushButton_connectComLin->setText("断开");
+    }
+    else
+    {
+        ui->pushButton_connectComLin->setText("连接");
+    }
+}
+
 void MainWindow::on_pushButton_refreshComList_clicked()
 {
     QStringList comNameList = m_serialPortReader.scanComList();
@@ -127,6 +148,11 @@ void MainWindow::on_pushButton_refreshComList_clicked()
     for(int i=0; i<comNameList.size(); i++)
     {
         ui->comboBox_comList->addItem(comNameList[i]);
+    }
+    ui->comboBox_comListLin->clear();
+    for(int i=0; i<comNameList.size(); i++)
+    {
+        ui->comboBox_comListLin->addItem(comNameList[i]);
     }
 }
 void MainWindow::slotSwitchImg()

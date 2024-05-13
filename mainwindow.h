@@ -72,6 +72,8 @@ private slots:
 
     void on_checkBox_ledEnable_stateChanged(int arg1);
 
+    void on_pushButton_connectComLin_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

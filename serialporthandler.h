@@ -175,14 +175,19 @@ class SerialPortHandler : public QObject
 public:
     explicit SerialPortHandler(QObject *parent = nullptr);
     bool connectCom(QString portName, int baudrate);
+    bool connectComLin(QString portName, int baudrate);
     void disconnectCom();
+    void disconnectComLin();
     QStringList scanComList();
     bool isConnected();
+    bool isConnectedLin();
+
     void setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr);
     void startRecord(QString filenamePrefix, int mode, QList<int> pulseNumList, int atBvd, QList<int> bvdList, int atPulseNum, int frameNum);
     void stopRecord();
     bool isRecording();
 
+    void serialSendCmd(QByteArray cmd);
     void devSetVi4302Mode(int mode);
     void devSetHardLineConfig(int pin_sel, int pin_mode, int pwidth_ms);
     void devSetSampleRate(int sample_rate);
@@ -208,14 +213,19 @@ private:
     uint8_t calSum(QByteArray data);
     void scheduleRecord();
     void handleData();
+    void dataForFrameSearch(QByteArray rawData);
+    void linPortWrite(QByteArray cmd);
 
 private slots:
     void handleReadyRead();
+    void handleReadyReadLin();
     void handleError(QSerialPort::SerialPortError error);
 
 private:
     QSerialPort m_serialPort;
+    QSerialPort m_serialPortLin;
     QByteArray m_readData;
+    QByteArray m_readDataLin;
     QByteArray m_frameData;
     QVector<QPointF> m_histData;
 

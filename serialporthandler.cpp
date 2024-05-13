@@ -76,9 +76,31 @@ bool SerialPortHandler::connectCom(QString portName, int baudrate)
 
     return true;
 }
+
+bool SerialPortHandler::connectComLin(QString portName, int baudrate)
+{
+    m_serialPortLin.setPortName(portName);
+    m_serialPortLin.setBaudRate(baudrate);
+
+    if (!m_serialPortLin.open(QIODevice::ReadWrite)) {
+        qDebug() << "Failed to open port";
+        return false;
+    }
+
+    connect(&m_serialPortLin, &QSerialPort::readyRead, this, &SerialPortHandler::handleReadyReadLin);
+    connect(&m_serialPortLin, &QSerialPort::errorOccurred, this, &SerialPortHandler::handleError);
+
+    return true;
+}
+
 void SerialPortHandler::disconnectCom()
 {
     m_serialPort.close();
+}
+
+void SerialPortHandler::disconnectComLin()
+{
+    m_serialPortLin.close();
 }
 
 QStringList SerialPortHandler::scanComList()
@@ -96,6 +118,11 @@ QStringList SerialPortHandler::scanComList()
 bool SerialPortHandler::isConnected()
 {
     return m_serialPort.isOpen();
+}
+
+bool SerialPortHandler::isConnectedLin()
+{
+    return m_serialPortLin.isOpen();
 }
 
 void SerialPortHandler::setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr)
@@ -333,9 +360,9 @@ uint8_t SerialPortHandler::calSum(QByteArray data)
     return res;
 }
 
-void SerialPortHandler::handleReadyRead()
+void SerialPortHandler::dataForFrameSearch(QByteArray rawData)
 {
-    m_readData.append(m_serialPort.readAll());
+    m_readData.append(rawData);
 
     while(m_readData.size()>=5)
     {
@@ -374,6 +401,63 @@ void SerialPortHandler::handleReadyRead()
     }
 }
 
+void SerialPortHandler::linPortWrite(QByteArray cmd)
+{
+    QByteArray buf;
+
+    buf.resize(22);
+    buf[0] = 0x55;
+    buf[1] = 0xAA;
+    buf[2] = 22;    // nLen
+    buf[3] = 0x00;  // isCheck
+    buf[4] = 0x20;  // 主机发送数据命令码
+    buf[5] = 0x00;  // 保留为0
+    buf[6] = 0x01;  // 主发送0x01
+    buf[7] = 0x00;  // 返回数据正确性？
+    buf[8] = 0x3E;  // 下位机固定debug用的PID
+    buf[9] = 0x01;  // 标准0, 增强1, 自定义2
+    buf[10] = 0x08; // 数据长度
+
+    buf[19] = 0x00; // LIN校验值，校验值，自定义下可写，标准和增强下无意义，但占位
+    buf[20] = 0x00; // nCheck，不校验，随便填
+    buf[21] = 0x5A;
+
+    int idx = 0;
+    int packSize = 0;
+    while(idx < cmd.size())
+    {
+        if(idx+8 <= cmd.size())
+        {
+            packSize = 8;
+        }
+        else
+        {
+            packSize = cmd.size() - idx;
+        }
+
+        for(int n = 0; n < packSize; n++)
+        {
+            buf[11+n] = uint8_t(cmd[idx+n]);
+        }
+
+        m_serialPortLin.write(buf);
+        m_serialPortLin.waitForBytesWritten();
+
+        idx += packSize;
+    }
+}
+
+void SerialPortHandler::handleReadyRead()
+{
+    dataForFrameSearch(m_serialPort.readAll());
+}
+
+void SerialPortHandler::handleReadyReadLin()
+{
+
+}
+
+
 void SerialPortHandler::handleError(QSerialPort::SerialPortError serialPortError)
 {
     if (serialPortError == QSerialPort::ReadError) {
@@ -382,361 +466,316 @@ void SerialPortHandler::handleError(QSerialPort::SerialPortError serialPortError
     }
 }
 
-void SerialPortHandler::devSetVi4302Mode(int mode)
+void SerialPortHandler::serialSendCmd(QByteArray cmd)
 {
-    QByteArray cmd;
     if(m_serialPort.isOpen())
     {
-        cmd.resize(6);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x06;
-        cmd[3] = 0x03;
-        cmd[4] = mode;
-        cmd[5] = calSum(cmd.mid(0,5));
         m_serialPort.write(cmd);
         m_serialPort.waitForBytesWritten();
     }
+
+    if(m_serialPortLin.isOpen())
+    {
+        linPortWrite(cmd);
+    }
+}
+
+void SerialPortHandler::devSetVi4302Mode(int mode)
+{
+    QByteArray cmd;
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x06;
+    cmd[3] = 0x03;
+    cmd[4] = mode;
+    cmd[5] = calSum(cmd.mid(0,5));
+    m_serialPort.write(cmd);
+    m_serialPort.waitForBytesWritten();
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetHardLineConfig(int pin_sel, int pin_mode, int pwidth_ms)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(9);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x09;
-        cmd[3] = 0x04;
-        cmd[4] = pin_sel;
-        cmd[5] = pin_mode;
-        cmd[6] = (uint16_t)pwidth_ms & 0xFF;
-        cmd[7] = ((uint16_t)pwidth_ms>>8) & 0xFF;
-        cmd[8] = calSum(cmd.mid(0,8));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(9);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x09;
+    cmd[3] = 0x04;
+    cmd[4] = pin_sel;
+    cmd[5] = pin_mode;
+    cmd[6] = (uint16_t)pwidth_ms & 0xFF;
+    cmd[7] = ((uint16_t)pwidth_ms>>8) & 0xFF;
+    cmd[8] = calSum(cmd.mid(0,8));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetSampleRate(int sample_rate)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(7);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x07;
-        cmd[3] = 0x06;
-        cmd[4] = (uint16_t)sample_rate & 0xFF;
-        cmd[5] = ((uint16_t)sample_rate>>8) & 0xFF;
-        cmd[6] = calSum(cmd.mid(0,6));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x07;
+    cmd[3] = 0x06;
+    cmd[4] = (uint16_t)sample_rate & 0xFF;
+    cmd[5] = ((uint16_t)sample_rate>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,6));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetLdTrigPwidth(int pwidth)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(7);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x07;
-        cmd[3] = 0x07;
-        cmd[4] = (uint16_t)pwidth & 0xFF;
-        cmd[5] = ((uint16_t)pwidth>>8) & 0xFF;
-        cmd[6] = calSum(cmd.mid(0,6));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x07;
+    cmd[3] = 0x07;
+    cmd[4] = (uint16_t)pwidth & 0xFF;
+    cmd[5] = ((uint16_t)pwidth>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,6));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetLdTrigNum(int trig_num)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(7);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x07;
-        cmd[3] = 0x0D;
-        cmd[4] = (uint16_t)trig_num & 0xFF;
-        cmd[5] = ((uint16_t)trig_num>>8) & 0xFF;
-        cmd[6] = calSum(cmd.mid(0,6));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x07;
+    cmd[3] = 0x0D;
+    cmd[4] = (uint16_t)trig_num & 0xFF;
+    cmd[5] = ((uint16_t)trig_num>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,6));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSoftReset()
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(5);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x05;
-        cmd[3] = 0x02;
-        cmd[4] = calSum(cmd.mid(0,4));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(5);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x05;
+    cmd[3] = 0x02;
+    cmd[4] = calSum(cmd.mid(0,4));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devReadFirmwareVersion()
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(5);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x05;
-        cmd[3] = 0x01;
-        cmd[4] = calSum(cmd.mid(0,4));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(5);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x05;
+    cmd[3] = 0x01;
+    cmd[4] = calSum(cmd.mid(0,4));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devRangingEnable(int en)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(6);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x06;
-        cmd[3] = 0x05;
-        cmd[4] = en;
-        cmd[5] = calSum(cmd.mid(0,5));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x06;
+    cmd[3] = 0x05;
+    cmd[4] = en;
+    cmd[5] = calSum(cmd.mid(0,5));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSaveConfig()
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(5);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x05;
-        cmd[3] = 0x11;
-        cmd[4] = calSum(cmd.mid(0,4));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(5);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x05;
+    cmd[3] = 0x11;
+    cmd[4] = calSum(cmd.mid(0,4));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetFootDetectPara(FootDetectParaStruct para)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(15);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 15;
-        cmd[3] = ID_FOOT_DETECT_PARA;
-        cmd[4] = para.gnd_stable_th_mm & 0xFF;
-        cmd[5] = (para.gnd_stable_th_mm>>8) & 0xFF;
-        cmd[6] = para.foot_stable_th_mm & 0xFF;
-        cmd[7] = (para.foot_stable_th_mm>>8) & 0xFF;
-        cmd[8] = para.valid_foot_th_min_mm & 0xFF;
-        cmd[9] = (para.valid_foot_th_min_mm>>8) & 0xFF;
-        cmd[10] = para.valid_foot_th_max_mm & 0xFF;
-        cmd[11] = (para.valid_foot_th_max_mm>>8) & 0xFF;
-        cmd[12] = para.data_win_size & 0xFF;
-        cmd[13] = (para.data_win_size>>8) & 0xFF;
-        cmd[14] = calSum(cmd.mid(0,14));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(15);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 15;
+    cmd[3] = ID_FOOT_DETECT_PARA;
+    cmd[4] = para.gnd_stable_th_mm & 0xFF;
+    cmd[5] = (para.gnd_stable_th_mm>>8) & 0xFF;
+    cmd[6] = para.foot_stable_th_mm & 0xFF;
+    cmd[7] = (para.foot_stable_th_mm>>8) & 0xFF;
+    cmd[8] = para.valid_foot_th_min_mm & 0xFF;
+    cmd[9] = (para.valid_foot_th_min_mm>>8) & 0xFF;
+    cmd[10] = para.valid_foot_th_max_mm & 0xFF;
+    cmd[11] = (para.valid_foot_th_max_mm>>8) & 0xFF;
+    cmd[12] = para.data_win_size & 0xFF;
+    cmd[13] = (para.data_win_size>>8) & 0xFF;
+    cmd[14] = calSum(cmd.mid(0,14));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devReadAllPara()
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(6);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 6;
-        cmd[3] = ID_READ_ALL_PARAMS;
-        cmd[4] = 0;
-        cmd[5] = calSum(cmd.mid(0,5));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 6;
+    cmd[3] = ID_READ_ALL_PARAMS;
+    cmd[4] = 0;
+    cmd[5] = calSum(cmd.mid(0,5));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetWalkErrK(int k)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(7);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 7;
-        cmd[3] = ID_WALK_ERR_K;
-        cmd[4] = (uint16_t)k & 0xFF;
-        cmd[5] = ((uint16_t)k>>8) & 0xFF;
-        cmd[6] = calSum(cmd.mid(0,6));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 7;
+    cmd[3] = ID_WALK_ERR_K;
+    cmd[4] = (uint16_t)k & 0xFF;
+    cmd[5] = ((uint16_t)k>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,6));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetDistOffset(int offset)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(7);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 7;
-        cmd[3] = ID_DIST_OFFSET;
-        cmd[4] = (uint16_t)offset & 0xFF;
-        cmd[5] = ((uint16_t)offset>>8) & 0xFF;
-        cmd[6] = calSum(cmd.mid(0,6));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 7;
+    cmd[3] = ID_DIST_OFFSET;
+    cmd[4] = (uint16_t)offset & 0xFF;
+    cmd[5] = ((uint16_t)offset>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,6));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetLowPeakTh(int th)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(7);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 7;
-        cmd[3] = ID_LOW_PEAK_TH;
-        cmd[4] = (uint16_t)th & 0xFF;
-        cmd[5] = ((uint16_t)th>>8) & 0xFF;
-        cmd[6] = calSum(cmd.mid(0,6));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 7;
+    cmd[3] = ID_LOW_PEAK_TH;
+    cmd[4] = (uint16_t)th & 0xFF;
+    cmd[5] = ((uint16_t)th>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,6));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devSetDirtyDistTh(int th)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(6);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 6;
-        cmd[3] = ID_DIRTY_DIST_TH;
-        cmd[4] = (uint8_t)th;
-        cmd[5] = calSum(cmd.mid(0,5));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 6;
+    cmd[3] = ID_DIRTY_DIST_TH;
+    cmd[4] = (uint8_t)th;
+    cmd[5] = calSum(cmd.mid(0,5));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devEraseFlash()
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(6);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 6;
-        cmd[3] = ID_FLASH_ERASE;
-        cmd[4] = 0;
-        cmd[5] = calSum(cmd.mid(0,5));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 6;
+    cmd[3] = ID_FLASH_ERASE;
+    cmd[4] = 0;
+    cmd[5] = calSum(cmd.mid(0,5));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devBvdCalib()
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(ID_BVD_CALIB_LEN);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x05;
-        cmd[3] = ID_BVD_CALIB;
-        cmd[4] = calSum(cmd.mid(0,4));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(ID_BVD_CALIB_LEN);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x05;
+    cmd[3] = ID_BVD_CALIB;
+    cmd[4] = calSum(cmd.mid(0,4));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devReadReg(int reg_addr)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(ID_READ_REG_LEN);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = ID_READ_REG_LEN;
-        cmd[3] = ID_READ_REG;
-        cmd[4] = (uint16_t)reg_addr & 0xFF;
-        cmd[5] = ((uint16_t)reg_addr>>8) & 0xFF;
-        cmd[6] = calSum(cmd.mid(0,ID_READ_REG_LEN-1));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(ID_READ_REG_LEN);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = ID_READ_REG_LEN;
+    cmd[3] = ID_READ_REG;
+    cmd[4] = (uint16_t)reg_addr & 0xFF;
+    cmd[5] = ((uint16_t)reg_addr>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,ID_READ_REG_LEN-1));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devWriteReg(int reg_addr, int reg_val)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(ID_WRITE_REG_LEN);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = ID_WRITE_REG_LEN;
-        cmd[3] = ID_WRITE_REG;
-        cmd[4] = (uint16_t)reg_addr & 0xFF;
-        cmd[5] = ((uint16_t)reg_addr>>8) & 0xFF;
-        cmd[6] = (uint8_t)reg_val;
-        cmd[7] = calSum(cmd.mid(0,ID_WRITE_REG_LEN-1));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(ID_WRITE_REG_LEN);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = ID_WRITE_REG_LEN;
+    cmd[3] = ID_WRITE_REG;
+    cmd[4] = (uint16_t)reg_addr & 0xFF;
+    cmd[5] = ((uint16_t)reg_addr>>8) & 0xFF;
+    cmd[6] = (uint8_t)reg_val;
+    cmd[7] = calSum(cmd.mid(0,ID_WRITE_REG_LEN-1));
+
+    serialSendCmd(cmd);
 }
 
 void SerialPortHandler::devLedEnable(int en)
 {
     QByteArray cmd;
-    if(m_serialPort.isOpen())
-    {
-        cmd.resize(6);
-        cmd[0] = 0x8F;
-        cmd[1] = 0xD4;
-        cmd[2] = 0x06;
-        cmd[3] = ID_LED_ENABLE;
-        cmd[4] = en;
-        cmd[5] = calSum(cmd.mid(0,5));
-        m_serialPort.write(cmd);
-        m_serialPort.waitForBytesWritten();
-    }
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x06;
+    cmd[3] = ID_LED_ENABLE;
+    cmd[4] = en;
+    cmd[5] = calSum(cmd.mid(0,5));
+    serialSendCmd(cmd);
 }
 
 
