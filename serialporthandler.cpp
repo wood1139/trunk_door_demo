@@ -617,7 +617,7 @@ void SerialPortHandler::devSetFootDetectPara(FootDetectParaStruct para)
     cmd.resize(15);
     cmd[0] = 0x8F;
     cmd[1] = 0xD4;
-    cmd[2] = 15;
+    cmd[2] = 17;
     cmd[3] = ID_FOOT_DETECT_PARA;
     cmd[4] = para.gnd_stable_th_mm & 0xFF;
     cmd[5] = (para.gnd_stable_th_mm>>8) & 0xFF;
@@ -629,7 +629,9 @@ void SerialPortHandler::devSetFootDetectPara(FootDetectParaStruct para)
     cmd[11] = (para.valid_foot_th_max_mm>>8) & 0xFF;
     cmd[12] = para.data_win_size & 0xFF;
     cmd[13] = (para.data_win_size>>8) & 0xFF;
-    cmd[14] = calSum(cmd.mid(0,14));
+    cmd[14] = para.foot_in_hold_max_times & 0xFF;
+    cmd[15] = (para.foot_in_hold_max_times>>8) & 0xFF;
+    cmd[16] = calSum(cmd.mid(0,16));
 
     serialSendCmd(cmd);
 }
@@ -776,6 +778,34 @@ void SerialPortHandler::devLedEnable(int en)
     cmd[4] = en;
     cmd[5] = calSum(cmd.mid(0,5));
     serialSendCmd(cmd);
+}
+
+void SerialPortHandler::devBtTestMode(int en)
+{
+    QByteArray cmd;
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x06;
+    cmd[3] = ID_BT_TEST_MODE;
+    cmd[4] = en;
+    cmd[5] = calSum(cmd.mid(0,5));
+    serialSendCmd(cmd);
+}
+
+void SerialPortHandler::devBtRssiTh(int lock_rssi, int unlock_rssi)
+{
+    QByteArray cmd;
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x07;
+    cmd[3] = ID_BT_RSSI_TH;
+    cmd[4] = lock_rssi;
+    cmd[5] = unlock_rssi;
+    cmd[6] = calSum(cmd.mid(0,6));
+    serialSendCmd(cmd);
+    qDebug() << cmd.toHex();
 }
 
 

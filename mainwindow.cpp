@@ -327,11 +327,22 @@ void MainWindow::dispDeviceConfig()
     ui->lineEdit_footThMinMm->setText(QString::number(mDevConfigStruct.valid_foot_th_min_mm));
     ui->lineEdit_footThMaxMm->setText(QString::number(mDevConfigStruct.valid_foot_th_max_mm));
     ui->lineEdit_dataWinSize->setText(QString::number(mDevConfigStruct.data_win_size));
+    ui->lineEdit_footInHoldMaxTimes->setText(QString::number(mDevConfigStruct.foot_in_hold_max_times));
     ui->lineEdit_walkErrK->setText(QString::number(mDevConfigStruct.walk_err_k));
     ui->lineEdit_distOffset->setText(QString::number(mDevConfigStruct.dist_offset_mm));
     ui->lineEdit_dirtyDistTh->setText(QString::number(mDevConfigStruct.dirty_dist_th_mm));
     ui->lineEdit_lowPeakTh->setText(QString::number(mDevConfigStruct.low_peak_th));
     ui->lineEdit_ldTrigNum->setText(QString::number(mDevConfigStruct.vi4302_pulse_num));
+    ui->lineEdit_btLockRssi->setText(QString::number(mDevConfigStruct.bt_lock_rssi));
+    ui->lineEdit_btUnlockRssi->setText(QString::number(mDevConfigStruct.bt_unlock_rssi));
+    if(mDevConfigStruct.bt_test_mode)
+    {
+        ui->checkBox_btTestMode->setCheckState(Qt::Checked);
+    }
+    else
+    {
+        ui->checkBox_btTestMode->setCheckState(Qt::Unchecked);
+    }
 
     ui->label_bvdVal->setText("0x24F:"+QString::number(mDevConfigStruct.vi4302_bvd_val));
     ui->label_bvdTemp->setText("temp:"+QString::number(mDevConfigStruct.vi4302_calib_tmpr));
@@ -479,6 +490,7 @@ void MainWindow::on_pushButton_footDetectParaConfig_clicked()
     para.valid_foot_th_min_mm = ui->lineEdit_footThMinMm->text().toInt();
     para.valid_foot_th_max_mm = ui->lineEdit_footThMaxMm->text().toInt();
     para.data_win_size = ui->lineEdit_dataWinSize->text().toInt();
+    para.foot_in_hold_max_times = ui->lineEdit_footInHoldMaxTimes->text().toInt();
     m_serialPortReader.devSetFootDetectPara(para);
 }
 
@@ -569,6 +581,26 @@ void MainWindow::on_checkBox_ledEnable_stateChanged(int arg1)
     else
     {
         m_serialPortReader.devLedEnable(0);
+    }
+}
+
+
+void MainWindow::on_pushButton_btRssiSet_clicked()
+{
+    int lock_rssi = ui->lineEdit_btLockRssi->text().toInt();
+    int unlock_rssi = ui->lineEdit_btUnlockRssi->text().toInt();
+    m_serialPortReader.devBtRssiTh(lock_rssi, unlock_rssi);
+}
+
+void MainWindow::on_checkBox_btTestMode_stateChanged(int arg1)
+{
+    if(arg1)
+    {
+        m_serialPortReader.devBtTestMode(1);
+    }
+    else
+    {
+        m_serialPortReader.devBtTestMode(0);
     }
 }
 

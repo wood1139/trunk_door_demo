@@ -74,6 +74,10 @@ private slots:
 
     void on_pushButton_connectComLin_clicked();
 
+    void on_pushButton_btRssiSet_clicked();
+
+    void on_checkBox_btTestMode_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

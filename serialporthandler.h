@@ -89,6 +89,7 @@ typedef struct
     uint16_t valid_foot_th_min_mm;   // 识别脚的最小高度阈值
     uint16_t valid_foot_th_max_mm;   // 识别脚的最大高度阈值
     uint16_t data_win_size;          // 用于判定的数据长度
+    uint16_t foot_in_hold_max_times; // foot in状态最长持续时间，超过这个时间就强制切换回地面状态
 }FootDetectParaStruct;
 
 
@@ -101,7 +102,7 @@ enum FrameIdEnum
     ID_RANGING_ENABLE           = 0x05, ID_RANGING_ENABLE_LEN           = 6,   ID_RANGING_ENABLE_LEN_ACK          = 6,
     ID_SAMPLE_RATE              = 0x06, ID_SAMPLE_RATE_LEN              = 7,   ID_SAMPLE_RATE_LEN_ACK             = 7,
     ID_LD_TRIG_PWIDTH           = 0x07, ID_LD_TRIG_PWIDTH_LEN           = 7,   ID_LD_TRIG_PWIDTH_LEN_ACK          = 7,
-    ID_FOOT_DETECT_PARA         = 0x08, ID_FOOT_DETECT_PARA_LEN         = 15,  ID_FOOT_DETECT_PARA_LEN_ACK        = 15,
+    ID_FOOT_DETECT_PARA         = 0x08, ID_FOOT_DETECT_PARA_LEN         = 17,  ID_FOOT_DETECT_PARA_LEN_ACK        = 17,
     ID_WALK_ERR_K               = 0x09, ID_WALK_ERR_K_LEN               = 7,   ID_WALK_ERR_K_LEN_ACK              = 7,
     ID_DIST_OFFSET              = 0x0A, ID_DIST_OFFSET_LEN              = 7,   ID_DIST_OFFSET_LEN_ACK             = 7,
     ID_LOW_PEAK_TH              = 0x0B, ID_LOW_PEAK_TH_LEN              = 7,   ID_LOW_PEAK_TH_LEN_ACK             = 7,
@@ -116,6 +117,8 @@ enum FrameIdEnum
     ID_READ_ALL_PARAMS          = 0x14, ID_READ_ALL_PARAMS_LEN          = 6,   ID_READ_ALL_PARAMS_LEN_ACK         = 6,
     ID_BVD_CALIB                = 0x20, ID_BVD_CALIB_LEN                = 5,   ID_BVD_CALIB_LEN_ACK               = 7,
     ID_LED_ENABLE               = 0x21, ID_LED_ENABLE_LEN               = 6,   ID_LED_ENABLE_LEN_ACK              = 6,
+    ID_BT_TEST_MODE             = 0x22, ID_BT_TEST_MODE_LEN             = 6,   ID_BT_TEST_MODE_LEN_ACK            = 6,
+    ID_BT_RSSI_TH               = 0x23, ID_BT_RSSI_TH_LEN               = 7,   ID_BT_RSSI_TH_LEN_ACK              = 7,
 };
 
 enum DataIdEnum
@@ -165,6 +168,11 @@ typedef struct
     uint16_t          vi4302_pulse_num;        // 一次探测的打光次数
     uint8_t           led_enable;              // 投影光使能
     uint8_t           dummy;
+    uint16_t          foot_in_hold_max_times;  // foot in状态最长持续时间，超过这个时间就强制切换回地面状态
+    uint8_t           bt_test_mode;            // 蓝牙调试模式：0-蓝牙处于低功耗工作模式，1-蓝牙响应AT指令，调试串口输出蓝牙RSSI
+    int8_t            bt_lock_rssi;            // 蓝牙上锁强度值
+    int8_t            bt_unlock_rssi;          // 蓝牙解锁强度值
+    uint8_t           dummy1;
 }SysConfigStruct;
 
 
@@ -208,6 +216,8 @@ public:
     void devReadReg(int reg_addr);
     void devWriteReg(int reg_addr, int reg_val);
     void devLedEnable(int en);
+    void devBtTestMode(int en);
+    void devBtRssiTh(int lock_rssi, int unlock_rssi);
 
 private:
     uint8_t calSum(QByteArray data);
