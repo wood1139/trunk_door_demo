@@ -62,6 +62,11 @@ MainWindow::MainWindow(QWidget *parent)
 
    m_serialPortReader.setDataPtr(m_lineSeries, m_tableModel);
 
+   ui->comboBox_jtxWorkMode->addItem("Debug");
+   ui->comboBox_jtxWorkMode->addItem("Standard");
+   ui->comboBox_jtxWorkMode->addItem("L9");
+   ui->comboBox_jtxWorkMode->addItem("BMW");
+
    ui->comboBox_mode->addItem("Range Mode");
    ui->comboBox_mode->addItem("Single Pixel Mode");
    ui->comboBox_mode->addItem("Histogram Mode");
@@ -309,6 +314,10 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
 void MainWindow::dispDeviceConfig()
 {
     qDebug() << "\n\n read device config done. ";
+
+    ui->comboBox_jtxWorkMode->setCurrentIndex(mDevConfigStruct.jtx_work_mode);
+    ui->comboBox_mode->setCurrentIndex(mDevConfigStruct.vi4302_mode);
+
     ui->comboBox_hardlinePinSel->setCurrentIndex(mDevConfigStruct.hardline_pin_sel);
     ui->comboBox_hardlinePinMode->setCurrentIndex(mDevConfigStruct.hardline_pin_mode);
     if(mDevConfigStruct.is_ranging_enable)
@@ -361,6 +370,13 @@ void MainWindow::on_pushButton_test_clicked()
 {
     showImg(1);
 }
+
+
+void MainWindow::on_comboBox_jtxWorkMode_activated(int index)
+{
+    m_serialPortReader.devSetJtxWorkMode(index);
+}
+
 
 void MainWindow::on_comboBox_mode_activated(int index)
 {

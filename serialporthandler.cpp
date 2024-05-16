@@ -298,19 +298,19 @@ void SerialPortHandler::handleData()
         m_rangeRawData.timestamp_ms = uint8_t(m_frameData[29]) + (uint8_t(m_frameData[30])<<8) + (uint8_t(m_frameData[31])<<16) + (uint8_t(m_frameData[32])<<16);
 
         int width = 5;
-        qDebug().noquote() <<   "ntof=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
-                                "npeak=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
-                                "nnoise=" << QString("%1").arg(m_rangeRawData.norm_noise, 3) <<
-                                "int_num=" << QString("%1").arg(m_rangeRawData.int_num, 3) <<
-                                "apeak=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
-                                "anoise=" << QString("%1").arg(m_rangeRawData.atten_noise, 3) <<
-                                "ref_tof=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
-                                "temp_sensor=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, 4) <<
-                                "temp_mcu=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, 4) <<
-                                "raw_tof_mm=" << QString("%1").arg(m_rangeRawData.raw_tof_mm, width) <<
-                                "ctof=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
-                                "confidence=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
-                                "timestamp=" << QString("%1").arg(m_rangeRawData.timestamp_ms, width);
+        qDebug().noquote() <<   "nt=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
+                                "np=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
+                                "nn=" << QString("%1").arg(m_rangeRawData.norm_noise, 3) <<
+                                "int=" << QString("%1").arg(m_rangeRawData.int_num, 3) <<
+                                "ap=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
+                                "an=" << QString("%1").arg(m_rangeRawData.atten_noise, 3) <<
+                                "rt=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
+                                "tsen=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, 4) <<
+                                "tmcu=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, 4) <<
+                                "raw_mm=" << QString("%1").arg(m_rangeRawData.raw_tof_mm, width) <<
+                                "ct=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
+                                "conf=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
+                                "ts=" << QString("%1").arg(m_rangeRawData.timestamp_ms, 9);
         emit sigProcDist(m_rangeRawData.ctof);
         if(m_isRecording && m_frameCnt>=0)
         {
@@ -646,6 +646,22 @@ void SerialPortHandler::devReadAllPara()
     cmd[3] = ID_READ_ALL_PARAMS;
     cmd[4] = 0;
     cmd[5] = calSum(cmd.mid(0,5));
+
+    serialSendCmd(cmd);
+}
+
+void SerialPortHandler::devSetJtxWorkMode(int mode)
+{
+    QByteArray cmd;
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x06;
+    cmd[3] = ID_SET_JTX_WORK_MODE;
+    cmd[4] = mode;
+    cmd[5] = calSum(cmd.mid(0,5));
+    m_serialPort.write(cmd);
+    m_serialPort.waitForBytesWritten();
 
     serialSendCmd(cmd);
 }

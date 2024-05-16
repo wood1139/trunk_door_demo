@@ -115,6 +115,7 @@ enum FrameIdEnum
     ID_FLASH_ERASE              = 0x12, ID_FLASH_ERASE_LEN              = 6,   ID_FLASH_ERASE_LEN_ACK             = 6,
     ID_FLASH_BACKUP             = 0x13, ID_FLASH_BACKUP_LEN             = 13,  ID_FLASH_BACKUP_LEN_ACK            = 6,
     ID_READ_ALL_PARAMS          = 0x14, ID_READ_ALL_PARAMS_LEN          = 6,   ID_READ_ALL_PARAMS_LEN_ACK         = 6,
+    ID_SET_JTX_WORK_MODE        = 0x15, ID_SET_JTX_WORK_MODE_LEN        = 6,   ID_SET_JTX_WORK_MODE_LEN_ACK       = 6,
     ID_BVD_CALIB                = 0x20, ID_BVD_CALIB_LEN                = 5,   ID_BVD_CALIB_LEN_ACK               = 7,
     ID_LED_ENABLE               = 0x21, ID_LED_ENABLE_LEN               = 6,   ID_LED_ENABLE_LEN_ACK              = 6,
     ID_BT_TEST_MODE             = 0x22, ID_BT_TEST_MODE_LEN             = 6,   ID_BT_TEST_MODE_LEN_ACK            = 6,
@@ -167,7 +168,7 @@ typedef struct
     int8_t            vi4302_calib_tmpr;       // 标定时的温度，单位℃
     uint16_t          vi4302_pulse_num;        // 一次探测的打光次数
     uint8_t           led_enable;              // 投影光使能
-    uint8_t           dummy;
+    uint8_t           jtx_work_mode;           // 整机工作模式
     uint16_t          foot_in_hold_max_times;  // foot in状态最长持续时间，超过这个时间就强制切换回地面状态
     uint8_t           bt_test_mode;            // 蓝牙调试模式：0-蓝牙处于低功耗工作模式，1-蓝牙响应AT指令，调试串口输出蓝牙RSSI
     int8_t            bt_lock_rssi;            // 蓝牙上锁强度值
@@ -207,6 +208,7 @@ public:
     void devSaveConfig();
     void devSetFootDetectPara(FootDetectParaStruct para);
     void devReadAllPara();
+    void devSetJtxWorkMode(int mode);
     void devSetWalkErrK(int k);
     void devSetDistOffset(int offset);
     void devSetLowPeakTh(int th);

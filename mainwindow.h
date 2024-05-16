@@ -78,6 +78,8 @@ private slots:
 
     void on_checkBox_btTestMode_stateChanged(int arg1);
 
+    void on_comboBox_jtxWorkMode_activated(int index);
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
