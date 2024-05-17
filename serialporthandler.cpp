@@ -183,7 +183,7 @@ void SerialPortHandler::scheduleRecord()
 
         if(0 == m_mode)
         {// Range Mode
-            m_fstream << "norm_tof,norm_peak,norm_noise,int_num,atten_peak,atten_noise,ref_tof,temp_sensor_x100,temp_mcu_x100,raw_tof_mm,ctof,confidence,timestamp_ms,\n";
+            m_fstream << "norm_tof,norm_peak,norm_noise,int_num,atten_peak,atten_noise,ref_tof,temp_sensor_x100,temp_mcu_x100,raw_tof_mm,ctof,confidence,timestamp_ms,xtalk_count,\n";
         }
         else if(1 == m_mode)
         {// Single Pix Mode
@@ -283,34 +283,35 @@ void SerialPortHandler::handleData()
     }
     else if(uint8_t(m_frameData[3])==0xA3)
     {// range raw data
-        m_rangeRawData.norm_tof = uint8_t(m_frameData[4]) + (uint8_t(m_frameData[5])<<8);
-        m_rangeRawData.norm_peak = uint8_t(m_frameData[6]) + (uint8_t(m_frameData[7])<<8);
-        m_rangeRawData.norm_noise = uint8_t(m_frameData[8]) + (uint8_t(m_frameData[9])<<8) + (uint8_t(m_frameData[10])<<16);
-        m_rangeRawData.int_num = uint8_t(m_frameData[11]) + (uint8_t(m_frameData[12])<<8);
-        m_rangeRawData.atten_peak = uint8_t(m_frameData[13]) + (uint8_t(m_frameData[14])<<8);
-        m_rangeRawData.atten_noise = uint8_t(m_frameData[15]) + (uint8_t(m_frameData[16])<<8) + (uint8_t(m_frameData[17])<<16);
-        m_rangeRawData.ref_tof = uint8_t(m_frameData[18]) + (uint8_t(m_frameData[19])<<8);
-        m_rangeRawData.temp_sensor_x100 = int16_t(uint16_t(uint8_t(m_frameData[20]) + (uint8_t(m_frameData[21])<<8)));
-        m_rangeRawData.temp_mcu_x100 = int16_t(uint16_t(uint8_t(m_frameData[22]) + (uint8_t(m_frameData[23])<<8)));
-        m_rangeRawData.raw_tof_mm = int16_t(uint16_t(uint8_t(m_frameData[24]) + (uint8_t(m_frameData[25])<<8)));
-        m_rangeRawData.ctof = uint8_t(m_frameData[26]) + (uint8_t(m_frameData[27])<<8);
-        m_rangeRawData.confidence = uint8_t(m_frameData[28]);
-        m_rangeRawData.timestamp_ms = uint8_t(m_frameData[29]) + (uint8_t(m_frameData[30])<<8) + (uint8_t(m_frameData[31])<<16) + (uint8_t(m_frameData[32])<<16);
-
+        m_rangeRawData.norm_tof         = uint8_t(m_frameData[4]) + (uint8_t(m_frameData[5])<<8) + (uint8_t(m_frameData[6])<<16) + (uint8_t(m_frameData[7])<<24);
+        m_rangeRawData.norm_peak        = uint8_t(m_frameData[8]) + (uint8_t(m_frameData[9])<<8) + (uint8_t(m_frameData[10])<<16) + (uint8_t(m_frameData[11])<<24);
+        m_rangeRawData.norm_noise       = uint8_t(m_frameData[12]) + (uint8_t(m_frameData[13])<<8) + (uint8_t(m_frameData[14])<<16) + (uint8_t(m_frameData[15])<<24);
+        m_rangeRawData.int_num          = uint8_t(m_frameData[16]) + (uint8_t(m_frameData[17])<<8) + (uint8_t(m_frameData[18])<<16) + (uint8_t(m_frameData[19])<<24);
+        m_rangeRawData.atten_peak       = uint8_t(m_frameData[20]) + (uint8_t(m_frameData[21])<<8) + (uint8_t(m_frameData[22])<<16) + (uint8_t(m_frameData[23])<<24);
+        m_rangeRawData.atten_noise      = uint8_t(m_frameData[24]) + (uint8_t(m_frameData[25])<<8) + (uint8_t(m_frameData[26])<<16) + (uint8_t(m_frameData[27])<<24);
+        m_rangeRawData.ref_tof          = uint8_t(m_frameData[28]) + (uint8_t(m_frameData[29])<<8) + (uint8_t(m_frameData[30])<<16) + (uint8_t(m_frameData[31])<<24);
+        m_rangeRawData.temp_sensor_x100 = int32_t(uint32_t(uint8_t(m_frameData[32]) + (uint8_t(m_frameData[33])<<8) + (uint8_t(m_frameData[34])<<16) + (uint8_t(m_frameData[35])<<24)));
+        m_rangeRawData.temp_mcu_x100    = int32_t(uint32_t(uint8_t(m_frameData[36]) + (uint8_t(m_frameData[37])<<8) + (uint8_t(m_frameData[38])<<16) + (uint8_t(m_frameData[39])<<24)));
+        m_rangeRawData.raw_tof_mm       = uint8_t(m_frameData[40]) + (uint8_t(m_frameData[41])<<8) + (uint8_t(m_frameData[42])<<16) + (uint8_t(m_frameData[43])<<24);
+        m_rangeRawData.ctof             = uint8_t(m_frameData[44]) + (uint8_t(m_frameData[45])<<8) + (uint8_t(m_frameData[46])<<16) + (uint8_t(m_frameData[47])<<24);
+        m_rangeRawData.confidence       = uint8_t(m_frameData[48]) + (uint8_t(m_frameData[49])<<8) + (uint8_t(m_frameData[50])<<16) + (uint8_t(m_frameData[51])<<24);
+        m_rangeRawData.timestamp_ms     = uint8_t(m_frameData[52]) + (uint8_t(m_frameData[53])<<8) + (uint8_t(m_frameData[54])<<16) + (uint8_t(m_frameData[55])<<24);
+        m_rangeRawData.xtalk_count      = uint8_t(m_frameData[56]) + (uint8_t(m_frameData[57])<<8) + (uint8_t(m_frameData[58])<<16) + (uint8_t(m_frameData[59])<<24);
         int width = 5;
         qDebug().noquote() <<   "nt=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
-                                "np=" << QString("%1").arg(m_rangeRawData.norm_peak, width) <<
-                                "nn=" << QString("%1").arg(m_rangeRawData.norm_noise, 3) <<
-                                "int=" << QString("%1").arg(m_rangeRawData.int_num, 3) <<
+                                "np=" << QString("%1").arg(m_rangeRawData.norm_peak, 9) <<
+                                "nn=" << QString("%1").arg(m_rangeRawData.norm_noise, 9) <<
+                                "int=" << QString("%1").arg(m_rangeRawData.int_num, 9) <<
                                 "ap=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
-                                "an=" << QString("%1").arg(m_rangeRawData.atten_noise, 3) <<
+                                "an=" << QString("%1").arg(m_rangeRawData.atten_noise, width) <<
                                 "rt=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
                                 "tsen=" << QString("%1").arg(m_rangeRawData.temp_sensor_x100, 4) <<
                                 "tmcu=" << QString("%1").arg(m_rangeRawData.temp_mcu_x100, 4) <<
                                 "raw_mm=" << QString("%1").arg(m_rangeRawData.raw_tof_mm, width) <<
                                 "ct=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
                                 "conf=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
-                                "ts=" << QString("%1").arg(m_rangeRawData.timestamp_ms, 9);
+                                "ts=" << QString("%1").arg(m_rangeRawData.timestamp_ms, 9) <<
+                                "xcnt=" << QString("%1").arg(m_rangeRawData.xtalk_count, 9);
         emit sigProcDist(m_rangeRawData.ctof);
         if(m_isRecording && m_frameCnt>=0)
         {
@@ -326,7 +327,8 @@ void SerialPortHandler::handleData()
                          m_rangeRawData.raw_tof_mm << "," <<
                          m_rangeRawData.ctof << "," <<
                          m_rangeRawData.confidence << "," <<
-                         m_rangeRawData.timestamp_ms << ",\n";
+                         m_rangeRawData.timestamp_ms << "," <<
+                         m_rangeRawData.xtalk_count << ",\n";
         }
     }
 

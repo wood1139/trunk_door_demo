@@ -67,19 +67,20 @@ QT_END_NAMESPACE
 
 typedef struct
 {
-    int norm_tof;
-    int norm_peak;
-    int norm_noise;
-    int int_num;
-    int atten_peak;
-    int atten_noise;
-    int ref_tof;
-    int temp_sensor_x100;
-    int temp_mcu_x100;
-    int raw_tof_mm;
-    int ctof;
-    int confidence;
+    uint32_t norm_tof;
+    uint32_t norm_peak;
+    uint32_t norm_noise;
+    uint32_t int_num;
+    uint32_t atten_peak;
+    uint32_t atten_noise;
+    uint32_t ref_tof;
+    int32_t  temp_sensor_x100;
+    int32_t  temp_mcu_x100;
+    uint32_t raw_tof_mm;
+    uint32_t ctof;
+    uint32_t confidence;
     uint32_t timestamp_ms;
+    uint32_t xtalk_count;
 }RawDataStruct;
 
 typedef struct
