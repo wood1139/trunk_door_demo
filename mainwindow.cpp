@@ -309,6 +309,38 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
         ui->lineEdit_regAddr->setText(QString::number(reg_addr, 16));
         ui->lineEdit_regVal->setText(QString::number(reg_val));
     }
+    else if(uint8_t(frameData[3])==ID_XTALK_CALIB)
+    {
+        if(uint8_t(frameData[4]) == 0)
+        {
+            ui->label_xtalkCalibRes->setText("标定结果: 成功");
+        }
+        else
+        {
+            ui->label_xtalkCalibRes->setText("标定结果: 失败");
+        }
+
+        int VI530x_Cali_CG_Pos = (int8_t)frameData[5];
+        int VI530x_Cali_CG_Maxratio = (uint8_t)frameData[6];
+        int VI530x_Cali_CG_Peak = uint8_t(frameData[7]) + (uint8_t(frameData[8])<<8);
+        ui->label_VI530x_Cali_CG_Pos->setText("VI530x_Cali_CG_Pos:"+QString::number(VI530x_Cali_CG_Pos));
+        ui->label_VI530x_Cali_CG_Maxratio->setText("VI530x_Cali_CG_Maxratio:"+QString::number(VI530x_Cali_CG_Maxratio));
+        ui->label_VI530x_Cali_CG_Peak->setText("VI530x_Cali_CG_Peak:"+QString::number(VI530x_Cali_CG_Peak));
+    }
+    else if(uint8_t(frameData[3])==ID_OFFSET_CALIB)
+    {
+        if(uint8_t(frameData[4]) == 0)
+        {
+            ui->label_offsetCalibRes->setText("标定结果: 成功");
+        }
+        else
+        {
+            ui->label_offsetCalibRes->setText("标定结果: 失败");
+        }
+
+        int dist_offset_mm = uint8_t(frameData[5]) + (uint8_t(frameData[6])<<8);
+        ui->label_dist_offset_mm->setText("dist_offset_mm:"+QString::number(dist_offset_mm));
+    }
 }
 
 void MainWindow::dispDeviceConfig()
@@ -341,7 +373,7 @@ void MainWindow::dispDeviceConfig()
     ui->lineEdit_distOffset->setText(QString::number(mDevConfigStruct.dist_offset_mm));
     ui->lineEdit_dirtyDistTh->setText(QString::number(mDevConfigStruct.dirty_dist_th_mm));
     ui->lineEdit_lowPeakTh->setText(QString::number(mDevConfigStruct.low_peak_th));
-    ui->lineEdit_ldTrigNum->setText(QString::number(mDevConfigStruct.vi4302_pulse_num));
+    ui->lineEdit_ldTrigNum->setText(QString::number(mDevConfigStruct.spad_int_num));
     ui->lineEdit_btLockRssi->setText(QString::number(mDevConfigStruct.bt_lock_rssi));
     ui->lineEdit_btUnlockRssi->setText(QString::number(mDevConfigStruct.bt_unlock_rssi));
     if(mDevConfigStruct.bt_test_mode)
@@ -355,6 +387,10 @@ void MainWindow::dispDeviceConfig()
 
     ui->label_bvdVal->setText("0x24F:"+QString::number(mDevConfigStruct.vi4302_bvd_val));
     ui->label_bvdTemp->setText("temp:"+QString::number(mDevConfigStruct.vi4302_calib_tmpr));
+    ui->label_VI530x_Cali_CG_Pos->setText("VI530x_Cali_CG_Pos:"+QString::number(mDevConfigStruct.VI530x_Cali_CG_Pos));
+    ui->label_VI530x_Cali_CG_Maxratio->setText("VI530x_Cali_CG_Maxratio:"+QString::number(mDevConfigStruct.VI530x_Cali_CG_Maxratio));
+    ui->label_VI530x_Cali_CG_Peak->setText("VI530x_Cali_CG_Peak:"+QString::number(mDevConfigStruct.VI530x_Cali_CG_Peak));
+    ui->label_dist_offset_mm->setText("dist_offset_mm:"+QString::number(mDevConfigStruct.dist_offset_mm));
 
     if(mDevConfigStruct.led_enable)
     {
@@ -618,5 +654,23 @@ void MainWindow::on_checkBox_btTestMode_stateChanged(int arg1)
     {
         m_serialPortReader.devBtTestMode(0);
     }
+}
+
+
+void MainWindow::on_pushButton_xtalkCalib_clicked()
+{
+    ui->label_xtalkCalibRes->setText("标定结果");
+    ui->label_VI530x_Cali_CG_Pos->setText("VI530x_Cali_CG_Pos:");
+    ui->label_VI530x_Cali_CG_Maxratio->setText("VI530x_Cali_CG_Maxratio:");
+    ui->label_VI530x_Cali_CG_Peak->setText("VI530x_Cali_CG_Peak:");
+    m_serialPortReader.devXtalkCalib();
+}
+
+void MainWindow::on_pushButton_offsetCalib_clicked()
+{
+    int mm = ui->lineEdit_offsetCalibTrueMm->text().toInt();
+    ui->label_offsetCalibRes->setText("标定结果");
+    ui->label_dist_offset_mm->setText("dist_offset_mm:");
+    m_serialPortReader.devOffsetCalib(mm);
 }
 

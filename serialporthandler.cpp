@@ -300,8 +300,8 @@ void SerialPortHandler::handleData()
         int width = 5;
         qDebug().noquote() <<   "nt=" << QString("%1").arg(m_rangeRawData.norm_tof, width) <<
                                 "np=" << QString("%1").arg(m_rangeRawData.norm_peak, 9) <<
-                                "nn=" << QString("%1").arg(m_rangeRawData.norm_noise, 9) <<
-                                "int=" << QString("%1").arg(m_rangeRawData.int_num, 9) <<
+                                "nn=" << QString("%1").arg(m_rangeRawData.norm_noise, 7) <<
+                                "int=" << QString("%1").arg(m_rangeRawData.int_num, 7) <<
                                 "ap=" << QString("%1").arg(m_rangeRawData.atten_peak, width) <<
                                 "an=" << QString("%1").arg(m_rangeRawData.atten_noise, width) <<
                                 "rt=" << QString("%1").arg(m_rangeRawData.ref_tof, width) <<
@@ -311,7 +311,7 @@ void SerialPortHandler::handleData()
                                 "ct=" << QString("%1").arg(m_rangeRawData.ctof, width) <<
                                 "conf=" << QString("%1").arg(m_rangeRawData.confidence, 3) <<
                                 "ts=" << QString("%1").arg(m_rangeRawData.timestamp_ms, 9) <<
-                                "xcnt=" << QString("%1").arg(m_rangeRawData.xtalk_count, 9);
+                                "xcnt=" << QString("%1").arg(m_rangeRawData.xtalk_count, 7);
         emit sigProcDist(m_rangeRawData.ctof);
         if(m_isRecording && m_frameCnt>=0)
         {
@@ -548,14 +548,16 @@ void SerialPortHandler::devSetLdTrigPwidth(int pwidth)
 void SerialPortHandler::devSetLdTrigNum(int trig_num)
 {
     QByteArray cmd;
-    cmd.resize(7);
+    cmd.resize(9);
     cmd[0] = 0x8F;
     cmd[1] = 0xD4;
-    cmd[2] = 0x07;
+    cmd[2] = 0x09;
     cmd[3] = 0x0D;
-    cmd[4] = (uint16_t)trig_num & 0xFF;
-    cmd[5] = ((uint16_t)trig_num>>8) & 0xFF;
-    cmd[6] = calSum(cmd.mid(0,6));
+    cmd[4] = (uint32_t)trig_num & 0xFF;
+    cmd[5] = ((uint32_t)trig_num>>8) & 0xFF;
+    cmd[6] = ((uint32_t)trig_num>>16) & 0xFF;
+    cmd[7] = ((uint32_t)trig_num>>24) & 0xFF;
+    cmd[8] = calSum(cmd.mid(0,8));
 
     serialSendCmd(cmd);
 }
@@ -824,6 +826,34 @@ void SerialPortHandler::devBtRssiTh(int lock_rssi, int unlock_rssi)
     cmd[6] = calSum(cmd.mid(0,6));
     serialSendCmd(cmd);
     qDebug() << cmd.toHex();
+}
+
+void SerialPortHandler::devXtalkCalib()
+{
+    QByteArray cmd;
+    cmd.resize(ID_XTALK_CALIB_LEN);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 0x05;
+    cmd[3] = ID_XTALK_CALIB;
+    cmd[4] = calSum(cmd.mid(0,4));
+
+    serialSendCmd(cmd);
+}
+
+void SerialPortHandler::devOffsetCalib(int mm)
+{
+    QByteArray cmd;
+    cmd.resize(7);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 7;
+    cmd[3] = ID_OFFSET_CALIB;
+    cmd[4] = (uint16_t)mm & 0xFF;
+    cmd[5] = ((uint16_t)mm>>8) & 0xFF;
+    cmd[6] = calSum(cmd.mid(0,6));
+
+    serialSendCmd(cmd);
 }
 
 

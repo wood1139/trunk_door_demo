@@ -108,7 +108,7 @@ enum FrameIdEnum
     ID_DIST_OFFSET              = 0x0A, ID_DIST_OFFSET_LEN              = 7,   ID_DIST_OFFSET_LEN_ACK             = 7,
     ID_LOW_PEAK_TH              = 0x0B, ID_LOW_PEAK_TH_LEN              = 7,   ID_LOW_PEAK_TH_LEN_ACK             = 7,
     ID_DIRTY_DIST_TH            = 0x0C, ID_DIRTY_DIST_TH_LEN            = 6,   ID_DIRTY_DIST_TH_LEN_ACK           = 6,
-    ID_LD_TRIG_NUM              = 0x0D, ID_LD_TRIG_NUM_LEN              = 7,   ID_LD_TRIG_NUM_LEN_ACK             = 7,
+    ID_LD_TRIG_NUM              = 0x0D, ID_LD_TRIG_NUM_LEN              = 9,   ID_LD_TRIG_NUM_LEN_ACK             = 9,
     ID_READ_REG                 = 0x0E, ID_READ_REG_LEN                 = 7,   ID_READ_REG_LEN_ACK                = 8,
     ID_WRITE_REG                = 0x0F, ID_WRITE_REG_LEN                = 8,   ID_WRITE_REG_LEN_ACK               = 8,
     ID_RESTORE_DEFAULT          = 0x10, ID_RESTORE_DEFAULT_LEN          = 5,   ID_RESTORE_DEFAULT_LEN_ACK         = 6,
@@ -121,6 +121,8 @@ enum FrameIdEnum
     ID_LED_ENABLE               = 0x21, ID_LED_ENABLE_LEN               = 6,   ID_LED_ENABLE_LEN_ACK              = 6,
     ID_BT_TEST_MODE             = 0x22, ID_BT_TEST_MODE_LEN             = 6,   ID_BT_TEST_MODE_LEN_ACK            = 6,
     ID_BT_RSSI_TH               = 0x23, ID_BT_RSSI_TH_LEN               = 7,   ID_BT_RSSI_TH_LEN_ACK              = 7,
+    ID_XTALK_CALIB              = 0x24, ID_XTALK_CALIB_LEN              = 5,   ID_XTALK_CALIB_LEN_ACK             = 10,
+    ID_OFFSET_CALIB             = 0x25, ID_OFFSET_CALIB_LEN             = 7,   ID_OFFSET_CALIB_LEN_ACK            = 8,
 };
 
 enum DataIdEnum
@@ -161,13 +163,13 @@ typedef struct
     uint16_t          valid_foot_th_max_mm;    // 识别脚的最大高度阈值
     uint16_t          data_win_size;           // 用于判定的数据长度
     uint16_t          walk_err_k;              // 行走误差线性系数，err_mm = -walk_err_k * atten_peak / 10000
-    uint16_t          dist_offset_mm;          // 距离偏置
+    int16_t           dist_offset_mm;          // 距离偏置
     uint16_t          low_peak_th;             // 当atten_peak小于low_peak_th时，认为测距无效
     uint8_t           dirty_dist_th_mm;        // 当测距值小于dirty_dist_th_mm时，判断近距离遮挡或脏污
     uint8_t           vi4302_bvd_val;          // 初次上电标定的工作电压
     uint8_t           vi4302_tdc_val;          // 初次上电标定的TDC参数
     int8_t            vi4302_calib_tmpr;       // 标定时的温度，单位℃
-    uint16_t          vi4302_pulse_num;        // 一次探测的打光次数
+    uint16_t          dummy0;
     uint8_t           led_enable;              // 投影光使能
     uint8_t           jtx_work_mode;           // 整机工作模式
     uint16_t          foot_in_hold_max_times;  // foot in状态最长持续时间，超过这个时间就强制切换回地面状态
@@ -175,6 +177,10 @@ typedef struct
     int8_t            bt_lock_rssi;            // 蓝牙上锁强度值
     int8_t            bt_unlock_rssi;          // 蓝牙解锁强度值
     uint8_t           dummy1;
+    uint32_t          spad_int_num;            // 一次探测的打光次数
+    int8_t            VI530x_Cali_CG_Pos;      // 串扰标定位置
+    uint8_t           VI530x_Cali_CG_Maxratio; // 串扰标定比例
+    uint16_t          VI530x_Cali_CG_Peak;     // 串扰标定峰值
 }SysConfigStruct;
 
 
@@ -221,6 +227,8 @@ public:
     void devLedEnable(int en);
     void devBtTestMode(int en);
     void devBtRssiTh(int lock_rssi, int unlock_rssi);
+    void devXtalkCalib();
+    void devOffsetCalib(int mm);
 
 private:
     uint8_t calSum(QByteArray data);

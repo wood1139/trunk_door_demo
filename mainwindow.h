@@ -80,6 +80,10 @@ private slots:
 
     void on_comboBox_jtxWorkMode_activated(int index);
 
+    void on_pushButton_xtalkCalib_clicked();
+
+    void on_pushButton_offsetCalib_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
