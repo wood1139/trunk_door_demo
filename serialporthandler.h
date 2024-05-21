@@ -123,6 +123,7 @@ enum FrameIdEnum
     ID_BT_RSSI_TH               = 0x23, ID_BT_RSSI_TH_LEN               = 7,   ID_BT_RSSI_TH_LEN_ACK              = 7,
     ID_XTALK_CALIB              = 0x24, ID_XTALK_CALIB_LEN              = 5,   ID_XTALK_CALIB_LEN_ACK             = 10,
     ID_OFFSET_CALIB             = 0x25, ID_OFFSET_CALIB_LEN             = 7,   ID_OFFSET_CALIB_LEN_ACK            = 8,
+    ID_LED_BREATH_PARA          = 0x26, ID_LED_BREATH_PARA_LEN          = 17,  ID_LED_BREATH_PARA_LEN_ACK         = 17,
 };
 
 enum DataIdEnum
@@ -181,6 +182,9 @@ typedef struct
     int8_t            VI530x_Cali_CG_Pos;      // 串扰标定位置
     uint8_t           VI530x_Cali_CG_Maxratio; // 串扰标定比例
     uint16_t          VI530x_Cali_CG_Peak;     // 串扰标定峰值
+    uint32_t          led_breath_peak_x10000;
+    uint32_t          led_breath_depth_x10000;
+    uint32_t          led_breath_period_ms;
 }SysConfigStruct;
 
 
@@ -229,6 +233,7 @@ public:
     void devBtRssiTh(int lock_rssi, int unlock_rssi);
     void devXtalkCalib();
     void devOffsetCalib(int mm);
+    void devSetLedBreathPara(float peak, float depth, int period);
 
 private:
     uint8_t calSum(QByteArray data);

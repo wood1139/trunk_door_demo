@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V1.8.0</string>
+   <string>TOF调测工具V1.9.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -55,9 +55,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-364</y>
+             <y>-130</y>
              <width>413</width>
-             <height>1022</height>
+             <height>1167</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -131,17 +131,10 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="2">
-                <widget class="QPushButton" name="pushButton_btRssiSet">
-                 <property name="text">
-                  <string>配置</string>
-                 </property>
-                </widget>
-               </item>
                <item row="2" column="1">
                 <widget class="QLineEdit" name="lineEdit_btUnlockRssi"/>
                </item>
-               <item row="3" column="0" colspan="2">
+               <item row="3" column="0">
                 <widget class="QCheckBox" name="checkBox_btTestMode">
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -154,76 +147,23 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="1">
+                <widget class="QPushButton" name="pushButton_btRssiSet">
+                 <property name="text">
+                  <string>配置</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_tofSettings">
+             <widget class="QGroupBox" name="groupBox_11">
               <property name="title">
-               <string>TOF设置</string>
+               <string>LED设置</string>
               </property>
-              <layout class="QGridLayout" name="gridLayout_2">
-               <item row="8" column="1">
-                <widget class="QLineEdit" name="lineEdit_distOffset"/>
-               </item>
-               <item row="5" column="0">
-                <widget class="QPushButton" name="pushButton_ldTrigPwidth">
-                 <property name="text">
-                  <string>驱动脉冲100ps</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="QLineEdit" name="lineEdit_sampleRate"/>
-               </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="checkBox_rangeEnable">
-                 <property name="layoutDirection">
-                  <enum>Qt::RightToLeft</enum>
-                 </property>
-                 <property name="text">
-                  <string> 测距使能</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0">
-                <widget class="QPushButton" name="pushButton_distOffset">
-                 <property name="text">
-                  <string>距离偏置mm</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QLineEdit" name="lineEdit_ldTrigPwidth"/>
-               </item>
-               <item row="6" column="0">
-                <widget class="QPushButton" name="pushButton_ldTrigNum">
-                 <property name="text">
-                  <string>打光次数</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QPushButton" name="pushButton_sampleRate">
-                 <property name="text">
-                  <string>测距频率Hz</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
-                <widget class="QPushButton" name="pushButton_walkErrK">
-                 <property name="text">
-                  <string>行走误差系数</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="1">
-                <widget class="QLineEdit" name="lineEdit_walkErrK"/>
-               </item>
-               <item row="3" column="1">
+              <layout class="QGridLayout" name="gridLayout_3">
+               <item row="0" column="0">
                 <widget class="QCheckBox" name="checkBox_ledEnable">
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
@@ -236,18 +176,145 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_36">
+                 <property name="text">
+                  <string>呼吸周期</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_33">
+                 <property name="text">
+                  <string>呼吸深度</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>最大亮度</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLabel" name="label_32">
+                 <property name="text">
+                  <string>(0~1)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="2">
+                <widget class="QLabel" name="label_37">
+                 <property name="text">
+                  <string>(ms)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="lineEdit_ledBreathDepth"/>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="lineEdit_ledBreathPeriod"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="lineEdit_ledBreathPeak"/>
+               </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="label_34">
+                 <property name="text">
+                  <string>(0~1)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1" colspan="2">
+                <widget class="QPushButton" name="pushButton_ledConfig">
+                 <property name="text">
+                  <string>配置</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_tofSettings">
+              <property name="title">
+               <string>TOF设置</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_2">
+               <item row="10" column="1">
+                <widget class="QLineEdit" name="lineEdit_distOffset"/>
+               </item>
+               <item row="8" column="1">
                 <widget class="QLineEdit" name="lineEdit_ldTrigNum"/>
                </item>
-               <item row="0" column="0">
+               <item row="2" column="1">
+                <widget class="QComboBox" name="comboBox_mode"/>
+               </item>
+               <item row="7" column="1">
+                <widget class="QLineEdit" name="lineEdit_ldTrigPwidth"/>
+               </item>
+               <item row="10" column="0">
+                <widget class="QPushButton" name="pushButton_distOffset">
+                 <property name="text">
+                  <string>距离偏置mm</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
                 <widget class="QLabel" name="label_5">
                  <property name="text">
                   <string> 工作模式</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="QComboBox" name="comboBox_mode"/>
+               <item row="6" column="1">
+                <widget class="QLineEdit" name="lineEdit_sampleRate"/>
+               </item>
+               <item row="9" column="0">
+                <widget class="QPushButton" name="pushButton_walkErrK">
+                 <property name="text">
+                  <string>行走误差系数</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QPushButton" name="pushButton_ldTrigPwidth">
+                 <property name="text">
+                  <string>驱动脉冲100ps</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QPushButton" name="pushButton_ldTrigNum">
+                 <property name="text">
+                  <string>打光次数</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="1">
+                <widget class="QLineEdit" name="lineEdit_walkErrK"/>
+               </item>
+               <item row="6" column="0">
+                <widget class="QPushButton" name="pushButton_sampleRate">
+                 <property name="text">
+                  <string>测距频率Hz</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="checkBox_rangeEnable">
+                 <property name="layoutDirection">
+                  <enum>Qt::RightToLeft</enum>
+                 </property>
+                 <property name="text">
+                  <string> 测距使能</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>

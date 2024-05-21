@@ -400,6 +400,10 @@ void MainWindow::dispDeviceConfig()
     {
         ui->checkBox_ledEnable->setCheckState(Qt::Unchecked);
     }
+
+    ui->lineEdit_ledBreathPeak->setText(QString::number((float)mDevConfigStruct.led_breath_peak_x10000/10000.0));
+    ui->lineEdit_ledBreathDepth->setText(QString::number((float)mDevConfigStruct.led_breath_depth_x10000/10000.0));
+    ui->lineEdit_ledBreathPeriod->setText(QString::number(mDevConfigStruct.led_breath_period_ms));
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -672,5 +676,14 @@ void MainWindow::on_pushButton_offsetCalib_clicked()
     ui->label_offsetCalibRes->setText("标定结果");
     ui->label_dist_offset_mm->setText("dist_offset_mm:");
     m_serialPortReader.devOffsetCalib(mm);
+}
+
+
+void MainWindow::on_pushButton_ledConfig_clicked()
+{
+    float peak = ui->lineEdit_ledBreathPeak->text().toFloat();
+    float depth = ui->lineEdit_ledBreathDepth->text().toFloat();
+    int period = ui->lineEdit_ledBreathPeriod->text().toInt();
+    m_serialPortReader.devSetLedBreathPara(peak, depth, period);
 }
 

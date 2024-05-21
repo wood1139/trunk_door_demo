@@ -856,4 +856,31 @@ void SerialPortHandler::devOffsetCalib(int mm)
     serialSendCmd(cmd);
 }
 
+void SerialPortHandler::devSetLedBreathPara(float peak, float depth, int period)
+{
+    uint32_t peak_x10000 = peak * 10000;
+    uint32_t depth_x10000 = depth * 10000;
+    QByteArray cmd;
+    cmd.resize(17);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 17;
+    cmd[3] = ID_LED_BREATH_PARA;
+    cmd[4] = peak_x10000 & 0xFF;
+    cmd[5] = (peak_x10000>>8) & 0xFF;
+    cmd[6] = (peak_x10000>>16) & 0xFF;
+    cmd[7] = (peak_x10000>>24) & 0xFF;
+    cmd[8] = depth_x10000 & 0xFF;
+    cmd[9] = (depth_x10000>>8) & 0xFF;
+    cmd[10] = (depth_x10000>>16) & 0xFF;
+    cmd[11] = (depth_x10000>>24) & 0xFF;
+    cmd[12] = (uint32_t)period & 0xFF;
+    cmd[13] = ((uint32_t)period>>8) & 0xFF;
+    cmd[14] = ((uint32_t)period>>16) & 0xFF;
+    cmd[15] = ((uint32_t)period>>24) & 0xFF;
+    cmd[16] = calSum(cmd.mid(0,16));
+
+    serialSendCmd(cmd);
+}
+
 
