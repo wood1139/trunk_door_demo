@@ -347,6 +347,8 @@ void MainWindow::dispDeviceConfig()
 {
     qDebug() << "\n\n read device config done. ";
 
+    ui->lineEdit_sn->setText(QString::fromLatin1(mDevConfigStruct.sn, 16));
+
     ui->comboBox_jtxWorkMode->setCurrentIndex(mDevConfigStruct.jtx_work_mode);
     ui->comboBox_mode->setCurrentIndex(mDevConfigStruct.vi4302_mode);
 
@@ -685,5 +687,25 @@ void MainWindow::on_pushButton_ledConfig_clicked()
     float depth = ui->lineEdit_ledBreathDepth->text().toFloat();
     int period = ui->lineEdit_ledBreathPeriod->text().toInt();
     m_serialPortReader.devSetLedBreathPara(peak, depth, period);
+}
+
+
+void MainWindow::on_pushButton_writeSn_clicked()
+{
+    QString sn = ui->lineEdit_sn->text();
+    if(sn.size()>16)
+    {
+        QMessageBox messageBox;
+        messageBox.setText("SN长度应为16字节");
+        messageBox.exec();
+        return;
+    }
+
+    sn = sn.leftJustified(16, ' ');
+
+    QByteArray byteArray = sn.toLatin1();
+    char sn_char[16];
+    qstrncpy(sn_char, byteArray.constData(), 16);
+    m_serialPortReader.devWriteSn(sn_char);
 }
 

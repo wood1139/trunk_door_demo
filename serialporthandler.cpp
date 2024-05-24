@@ -664,8 +664,23 @@ void SerialPortHandler::devSetJtxWorkMode(int mode)
     cmd[3] = ID_SET_JTX_WORK_MODE;
     cmd[4] = mode;
     cmd[5] = calSum(cmd.mid(0,5));
-    m_serialPort.write(cmd);
-    m_serialPort.waitForBytesWritten();
+
+    serialSendCmd(cmd);
+}
+
+void SerialPortHandler::devWriteSn(char sn[16])
+{
+    QByteArray cmd;
+    cmd.resize(21);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 21;
+    cmd[3] = ID_WRITE_SN;
+    for(int i=0; i<16; i++)
+    {
+       cmd[4+i] = sn[i];
+    }
+    cmd[20] = calSum(cmd.mid(0,20));
 
     serialSendCmd(cmd);
 }

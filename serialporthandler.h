@@ -117,6 +117,7 @@ enum FrameIdEnum
     ID_FLASH_BACKUP             = 0x13, ID_FLASH_BACKUP_LEN             = 13,  ID_FLASH_BACKUP_LEN_ACK            = 6,
     ID_READ_ALL_PARAMS          = 0x14, ID_READ_ALL_PARAMS_LEN          = 6,   ID_READ_ALL_PARAMS_LEN_ACK         = 6,
     ID_SET_JTX_WORK_MODE        = 0x15, ID_SET_JTX_WORK_MODE_LEN        = 6,   ID_SET_JTX_WORK_MODE_LEN_ACK       = 6,
+    ID_WRITE_SN                 = 0x16, ID_WRITE_SN_LEN                 = 21,  ID_WRITE_SN_LEN_ACK                = 21,
     ID_BVD_CALIB                = 0x20, ID_BVD_CALIB_LEN                = 5,   ID_BVD_CALIB_LEN_ACK               = 7,
     ID_LED_ENABLE               = 0x21, ID_LED_ENABLE_LEN               = 6,   ID_LED_ENABLE_LEN_ACK              = 6,
     ID_BT_TEST_MODE             = 0x22, ID_BT_TEST_MODE_LEN             = 6,   ID_BT_TEST_MODE_LEN_ACK            = 6,
@@ -182,9 +183,10 @@ typedef struct
     int8_t            VI530x_Cali_CG_Pos;      // 串扰标定位置
     uint8_t           VI530x_Cali_CG_Maxratio; // 串扰标定比例
     uint16_t          VI530x_Cali_CG_Peak;     // 串扰标定峰值
-    uint32_t          led_breath_peak_x10000;
+    uint32_t          led_breath_peak_x10000;  // LED呼吸的最大亮度，即PWM占空比，最大10000
     uint32_t          led_breath_depth_x10000;
     uint32_t          led_breath_period_ms;
+    char              sn[16];
 }SysConfigStruct;
 
 
@@ -220,6 +222,7 @@ public:
     void devSetFootDetectPara(FootDetectParaStruct para);
     void devReadAllPara();
     void devSetJtxWorkMode(int mode);
+    void devWriteSn(char sn[16]);
     void devSetWalkErrK(int k);
     void devSetDistOffset(int offset);
     void devSetLowPeakTh(int th);

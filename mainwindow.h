@@ -86,6 +86,8 @@ private slots:
 
     void on_pushButton_ledConfig_clicked();
 
+    void on_pushButton_writeSn_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
