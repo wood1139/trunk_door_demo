@@ -58,7 +58,7 @@
 SerialPortHandler::SerialPortHandler(QObject *parent) :
     QObject(parent)
 {
-
+    m_isRecording = false;
 }
 
 bool SerialPortHandler::connectCom(QString portName, int baudrate)
@@ -332,12 +332,15 @@ void SerialPortHandler::handleData()
         }
     }
 
-    m_frameCnt++;
-    if(m_frameCnt >= m_frameNum)
+    if(m_isRecording)
     {
-        m_isRecording = false;
-        m_hfile.close();
-        scheduleRecord();
+        m_frameCnt++;
+        if(m_frameCnt >= m_frameNum)
+        {
+            m_isRecording = false;
+            m_hfile.close();
+            scheduleRecord();
+        }
     }
 }
 
