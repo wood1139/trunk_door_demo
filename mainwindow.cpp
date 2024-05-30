@@ -79,13 +79,11 @@ MainWindow::MainWindow(QWidget *parent)
    ui->comboBox_hardlinePinMode->addItem("Open-Drain");
    ui->comboBox_hardlinePinMode->addItem("Push-Pull");
 
-   ui->lineEdit_hardlinePulseMs->setText("50");
-
-   ui->lineEdit_setFramNum->setText("200");
-   ui->lineEdit_pulseNumList->setText("150 500 1000 1500");
-   ui->lineEdit_scanPulseNumListAtBvd->setText("235");
-   ui->lineEdit_bvdList->setText("225 227 229 231 235 237 239");
-   ui->lineEdit_scanBvdAtPulseNum->setText("500");
+//   ui->lineEdit_setFramNum->setText("200");
+//   ui->lineEdit_pulseNumList->setText("150 500 1000 1500");
+//   ui->lineEdit_scanPulseNumListAtBvd->setText("235");
+//   ui->lineEdit_bvdList->setText("225 227 229 231 235 237 239");
+//   ui->lineEdit_scanBvdAtPulseNum->setText("500");
 
    QDir dir("data");
    if (!dir.exists())
@@ -434,24 +432,36 @@ void MainWindow::on_pushButton_record_clicked()
     QString modeStr = tmpStrList[0];
 
     QString pulseNumListStr = ui->lineEdit_pulseNumList->text();
-    tmpStrList = pulseNumListStr.split(" ");
     QList<int> pulseNumList;
-    foreach(const QString &str, tmpStrList)
+    if(pulseNumListStr.size() > 0)
     {
-        pulseNumList.append(str.toInt());
+        tmpStrList = pulseNumListStr.split(" ");
+        foreach(const QString &str, tmpStrList)
+        {
+            pulseNumList.append(str.toInt());
+        }
     }
     int atBvd = ui->lineEdit_scanPulseNumListAtBvd->text().toInt();
 
     QString bvdListStr = ui->lineEdit_bvdList->text();
-    tmpStrList = bvdListStr.split(" ");
     QList<int> bvdList;
-    foreach(const QString &str, tmpStrList)
+    if(bvdListStr.size() > 0)
     {
-        bvdList.append(str.toInt());
+        tmpStrList = bvdListStr.split(" ");
+        foreach(const QString &str, tmpStrList)
+        {
+            bvdList.append(str.toInt());
+        }
     }
     int atPulseNum = ui->lineEdit_scanBvdAtPulseNum->text().toInt();
 
     int frameNum = ui->lineEdit_setFramNum->text().toInt();
+
+    qDebug() << "frameNum=" << frameNum;
+    qDebug() << "pulseNumList.size()=" << pulseNumList.size();
+    qDebug() << "pulseNumList: " << pulseNumList;
+    qDebug() << "bvdList.size()=" << bvdList.size();
+    qDebug() << "bvdList:" << bvdList;
 
     QString filenamePrefix = "data/mode_" + modeStr + "-realdist_" + ui->lineEdit_realDist->text() + "-ref_" + ui->lineEdit_ref->text();
 

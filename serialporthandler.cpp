@@ -144,33 +144,36 @@ void SerialPortHandler::startRecord(QString filenamePrefix, int mode, QList<int>
     m_pulseNumIdx = 0;
     m_bvdIdx = 0;
 
+    m_frameCnt = -2;  // 丢弃前2帧，可能由于切换参数数据不稳定
     scheduleRecord();
 }
 
 void SerialPortHandler::scheduleRecord()
 {
-    int pulseNum, bvd;
-    if(m_pulseNumIdx < m_pulseNumList.size())
+    int pulseNum = 0;
+    int bvd = 0;
+    if(m_pulseNumList.size()>0 && m_pulseNumIdx<m_pulseNumList.size())
     {
         pulseNum = m_pulseNumList[m_pulseNumIdx];
         bvd = m_atBvd;
         m_pulseNumIdx++;
+        devSetLdTrigNum(pulseNum);
+        devWriteReg(0x24f, bvd);
     }
-    else if(m_bvdIdx < m_bvdList.size())
+    else if(m_bvdList.size()>0 && m_bvdIdx<m_bvdList.size())
     {
         pulseNum = m_atPulseNum;
         bvd = m_bvdList[m_bvdIdx];
         m_bvdIdx++;
+        devSetLdTrigNum(pulseNum);
+        devWriteReg(0x24f, bvd);
     }
-    else
+    else if(m_frameCnt >= m_frameNum)  // 列表都为空，或者有列表且存储完成
     {
         stopRecord();
         emit sigRecordStop();
         return;
     }
-
-    devSetLdTrigNum(pulseNum);
-    devWriteReg(0x24f, bvd);
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
     QString formattedDateTime = currentDateTime.toString("yyyyMMddhhmmss");
@@ -198,7 +201,6 @@ void SerialPortHandler::scheduleRecord()
             m_fstream << "idx,data,\n";
         }
 
-        m_frameCnt = -2;  // 丢弃前2帧，可能由于切换参数数据不稳定
         m_isRecording = true;
     }
 }
@@ -335,7 +337,7 @@ void SerialPortHandler::handleData()
     if(m_isRecording)
     {
         m_frameCnt++;
-        if(m_frameCnt >= m_frameNum)
+        if(m_frameNum > 0 && m_frameCnt >= m_frameNum)
         {
             m_isRecording = false;
             m_hfile.close();

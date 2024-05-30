@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V2.0.0</string>
+   <string>TOF调测工具V2.1.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1007,25 +1007,6 @@
          </rect>
         </property>
        </widget>
-       <widget class="QCheckBox" name="checkBox_setFrameNum">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>60</y>
-          <width>91</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::RightToLeft</enum>
-        </property>
-        <property name="text">
-         <string>   指定帧数</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
        <widget class="QLineEdit" name="lineEdit_setFramNum">
         <property name="geometry">
          <rect>
@@ -1080,6 +1061,19 @@
         </property>
         <property name="text">
          <string>@打光次数</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_38">
+        <property name="geometry">
+         <rect>
+          <x>63</x>
+          <y>70</y>
+          <width>71</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string> 录制帧数</string>
         </property>
        </widget>
       </widget>
