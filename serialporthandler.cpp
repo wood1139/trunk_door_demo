@@ -454,6 +454,26 @@ void SerialPortHandler::linPortWrite(QByteArray cmd)
     }
 }
 
+void SerialPortHandler::printHex(QByteArray cmd)
+{
+    // 将 QByteArray 转换成十六进制字符串
+    QString hexString = cmd.toHex().toUpper();
+
+    // 在每个字节之间添加空格
+    QString spacedHexString;
+    spacedHexString.reserve(hexString.size() + hexString.size() / 2); // 预分配空间，提高性能
+
+    for (int i = 0; i < hexString.size(); i += 2) {
+        if (i > 0) {
+            spacedHexString.append(' ');
+        }
+        spacedHexString.append(hexString.midRef(i, 2));
+    }
+
+    // 使用 qDebug 打印带空格的大写十六进制字符串
+    qDebug() << spacedHexString;
+}
+
 void SerialPortHandler::handleReadyRead()
 {
     dataForFrameSearch(m_serialPort.readAll());
@@ -475,6 +495,7 @@ void SerialPortHandler::handleError(QSerialPort::SerialPortError serialPortError
 
 void SerialPortHandler::serialSendCmd(QByteArray cmd)
 {
+    printHex(cmd);
     if(m_serialPort.isOpen())
     {
         m_serialPort.write(cmd);
@@ -845,7 +866,6 @@ void SerialPortHandler::devBtRssiTh(int lock_rssi, int unlock_rssi)
     cmd[5] = unlock_rssi;
     cmd[6] = calSum(cmd.mid(0,6));
     serialSendCmd(cmd);
-    qDebug() << cmd.toHex();
 }
 
 void SerialPortHandler::devXtalkCalib()

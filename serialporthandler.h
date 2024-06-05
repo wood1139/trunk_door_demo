@@ -244,6 +244,7 @@ private:
     void handleData();
     void dataForFrameSearch(QByteArray rawData);
     void linPortWrite(QByteArray cmd);
+    void printHex(QByteArray cmd);
 
 private slots:
     void handleReadyRead();
