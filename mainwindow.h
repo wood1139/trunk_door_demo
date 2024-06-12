@@ -88,11 +88,14 @@ private slots:
 
     void on_pushButton_writeSn_clicked();
 
+    void on_checkBox_jumpRecord_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
     SerialPortHandler m_serialPortReader;
     QTimer m_timer;
+    QTimer m_timerJumpRecord;
 
     QLineSeries *m_lineSeries;
     QChart      *m_chart;
@@ -112,6 +115,7 @@ private:
 public slots:
     void slotHandleLidarData(QByteArray frameData);
     void slotSwitchImg();
+    void slotTimerJumpRecord();
     void slotSetAxisRange(int xmin, int xmax, int ymin, int ymax);
     void slotRecordStop();
     void slotProcDist(int mm);

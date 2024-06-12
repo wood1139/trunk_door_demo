@@ -331,6 +331,7 @@ void SerialPortHandler::handleData()
                          m_rangeRawData.confidence << "," <<
                          m_rangeRawData.timestamp_ms << "," <<
                          m_rangeRawData.xtalk_count << ",\n";
+            m_fstream.flush();
         }
     }
 

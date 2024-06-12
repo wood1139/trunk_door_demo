@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     m_timer.setInterval(200);
     QObject::connect(&m_timer, &QTimer::timeout, this, &MainWindow::slotSwitchImg);
+    QObject::connect(&m_timerJumpRecord, &QTimer::timeout, this, &MainWindow::slotTimerJumpRecord);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigLidarData, this, &MainWindow::slotHandleLidarData);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigSetAxisRange, this, &MainWindow::slotSetAxisRange);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigRecordStop, this, &MainWindow::slotRecordStop);
@@ -173,6 +174,11 @@ void MainWindow::slotSwitchImg()
         showImg(2);
     }
 
+}
+
+void MainWindow::slotTimerJumpRecord()
+{
+    on_pushButton_record_clicked();
 }
 
 void MainWindow::slotSetAxisRange(int xmin, int xmax, int ymin, int ymax)
@@ -717,5 +723,25 @@ void MainWindow::on_pushButton_writeSn_clicked()
     char sn_char[16];
     qstrncpy(sn_char, byteArray.constData(), 16);
     m_serialPortReader.devWriteSn(sn_char);
+}
+
+void MainWindow::on_checkBox_jumpRecord_stateChanged(int arg1)
+{
+    if(arg1)
+    {
+        QString minutes = ui->lineEdit_jumpRecordIntervalMin->text();
+        bool ok;
+        double number = minutes.toDouble(&ok);
+        int ms = number*60*1000;
+        m_timerJumpRecord.setInterval(ms);
+        m_timerJumpRecord.start();
+        on_pushButton_record_clicked();
+    }
+    else
+    {
+        m_timerJumpRecord.stop();
+    }
+
+
 }
 
