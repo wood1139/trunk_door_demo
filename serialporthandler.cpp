@@ -645,7 +645,7 @@ void SerialPortHandler::devSaveConfig()
 void SerialPortHandler::devSetFootDetectPara(FootDetectParaStruct para)
 {
     QByteArray cmd;
-    cmd.resize(15);
+    cmd.resize(17);
     cmd[0] = 0x8F;
     cmd[1] = 0xD4;
     cmd[2] = 17;
