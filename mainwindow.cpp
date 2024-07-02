@@ -721,7 +721,7 @@ void MainWindow::on_pushButton_writeSn_clicked()
 
     QByteArray byteArray = sn.toLatin1();
     char sn_char[16];
-    qstrncpy(sn_char, byteArray.constData(), 16);
+    memcpy(sn_char, byteArray.constData(), sizeof(sn_char));
     m_serialPortReader.devWriteSn(sn_char);
 }
 
