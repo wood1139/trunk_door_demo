@@ -209,6 +209,7 @@ void SerialPortHandler::handleData()
 {
     static uint8_t pack_id = 0;
     static int hist_data_max = 0;
+    static int cur_axis_y_max = 20;
 
     if(uint8_t(m_frameData[3])==0xA1)
     {// histogram data
@@ -219,12 +220,13 @@ void SerialPortHandler::handleData()
         }
         if(uint8_t(m_frameData[4])==pack_id)
         {
-            for(int i=0; i<128; i++)
+            for(int i=0; i<64; i++)
             {
-                m_histData.append(QPointF(pack_id*128+i, uint8_t(m_frameData[5+i])));
-                if(uint8_t(m_frameData[5+i])>hist_data_max)
+                uint16_t bin = uint16_t(uint8_t(m_frameData[5+2*i]) + (uint8_t(m_frameData[5+2*i+1]<<8)));
+                m_histData.append(QPointF(pack_id*64+i, bin));
+                if(bin>hist_data_max)
                 {
-                    hist_data_max = m_frameData[5+i];
+                    hist_data_max = bin;
                 }
             }
             pack_id++;
@@ -234,16 +236,25 @@ void SerialPortHandler::handleData()
                 if(nullptr != m_lineSeriesPtr)
                 {
                     m_lineSeriesPtr->replace(m_histData);
-//                        int y_range = hist_data_max * 1.2;
-//                        if(y_range < 20)
-//                        {
-//                            y_range = 20;
-//                        }
-//                        emit sigSetAxisRange(0, 2048, 0, y_range);
+
+                    // 动态调整纵轴范围
+                    if(hist_data_max > cur_axis_y_max)
+                    {
+                        cur_axis_y_max = hist_data_max * 2;
+                    }
+                    else if(hist_data_max < 0.2*cur_axis_y_max)
+                    {
+                        cur_axis_y_max = hist_data_max * 1.2;
+                    }
+                    if(cur_axis_y_max < 20)
+                    {
+                        cur_axis_y_max = 20;
+                    }
+                    emit sigSetAxisRange(0, 1024, 0, cur_axis_y_max);
                 }
                 if(m_isRecording && m_frameCnt>=0)
                 {
-                    for(int i=0; i<2048; i++)
+                    for(int i=0; i<1024; i++)
                     {
                         m_fstream << m_histData[i].x() << "," << m_histData[i].y() << ",\n";
                     }

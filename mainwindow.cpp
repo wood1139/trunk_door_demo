@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_chart->addAxis(m_axisY, Qt::AlignLeft);
     m_lineSeries->attachAxis(m_axisY);
 
-    slotSetAxisRange(0,2048,0,100);
+    slotSetAxisRange(0,1024,0,300);
     ui->graphicsView->setChart(m_chart);
 
     m_tableModel = new QStandardItemModel(5,5,this);
