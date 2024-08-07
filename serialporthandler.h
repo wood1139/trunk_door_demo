@@ -91,6 +91,8 @@ typedef struct
     uint16_t valid_foot_th_max_mm;   // 识别脚的最大高度阈值
     uint16_t data_win_size;          // 用于判定的数据长度
     uint16_t foot_in_hold_max_times; // foot in状态最长持续时间，超过这个时间就强制切换回地面状态
+    uint16_t foot_pre_peak_mm;       // 脚踏稳定之前，必须有高于脚面的过程
+    uint16_t foot_pre_peak_win_size; // 脚踏稳定之前寻找pre_peak_mm的范围
 }FootDetectParaStruct;
 
 
@@ -103,11 +105,11 @@ enum FrameIdEnum
     ID_RANGING_ENABLE           = 0x05, ID_RANGING_ENABLE_LEN           = 6,   ID_RANGING_ENABLE_LEN_ACK          = 6,
     ID_SAMPLE_RATE              = 0x06, ID_SAMPLE_RATE_LEN              = 7,   ID_SAMPLE_RATE_LEN_ACK             = 7,
     ID_LD_TRIG_PWIDTH           = 0x07, ID_LD_TRIG_PWIDTH_LEN           = 7,   ID_LD_TRIG_PWIDTH_LEN_ACK          = 7,
-    ID_FOOT_DETECT_PARA         = 0x08, ID_FOOT_DETECT_PARA_LEN         = 17,  ID_FOOT_DETECT_PARA_LEN_ACK        = 17,
+    ID_FOOT_DETECT_PARA         = 0x08, ID_FOOT_DETECT_PARA_LEN         = 21,  ID_FOOT_DETECT_PARA_LEN_ACK        = 21,
     ID_WALK_ERR_K               = 0x09, ID_WALK_ERR_K_LEN               = 7,   ID_WALK_ERR_K_LEN_ACK              = 7,
     ID_DIST_OFFSET              = 0x0A, ID_DIST_OFFSET_LEN              = 7,   ID_DIST_OFFSET_LEN_ACK             = 7,
     ID_LOW_PEAK_TH              = 0x0B, ID_LOW_PEAK_TH_LEN              = 7,   ID_LOW_PEAK_TH_LEN_ACK             = 7,
-    ID_DIRTY_DIST_TH            = 0x0C, ID_DIRTY_DIST_TH_LEN            = 6,   ID_DIRTY_DIST_TH_LEN_ACK           = 6,
+    ID_DIRTY_TH                 = 0x0C, ID_DIRTY_TH_LEN                 = 10,  ID_DIRTY_TH_LEN_ACK                = 10,
     ID_LD_TRIG_NUM              = 0x0D, ID_LD_TRIG_NUM_LEN              = 9,   ID_LD_TRIG_NUM_LEN_ACK             = 9,
     ID_READ_REG                 = 0x0E, ID_READ_REG_LEN                 = 7,   ID_READ_REG_LEN_ACK                = 8,
     ID_WRITE_REG                = 0x0F, ID_WRITE_REG_LEN                = 8,   ID_WRITE_REG_LEN_ACK               = 8,
@@ -118,6 +120,7 @@ enum FrameIdEnum
     ID_READ_ALL_PARAMS          = 0x14, ID_READ_ALL_PARAMS_LEN          = 6,   ID_READ_ALL_PARAMS_LEN_ACK         = 6,
     ID_SET_JTX_WORK_MODE        = 0x15, ID_SET_JTX_WORK_MODE_LEN        = 6,   ID_SET_JTX_WORK_MODE_LEN_ACK       = 6,
     ID_WRITE_SN                 = 0x16, ID_WRITE_SN_LEN                 = 21,  ID_WRITE_SN_LEN_ACK                = 21,
+    ID_WRITE_ALL_PARAMS         = 0x17, ID_WRITE_ALL_PARAMS_LEN         = 57,  ID_WRITE_ALL_PARAMS_LEN_ACK        = 6,
     ID_BVD_CALIB                = 0x20, ID_BVD_CALIB_LEN                = 5,   ID_BVD_CALIB_LEN_ACK               = 7,
     ID_LED_ENABLE               = 0x21, ID_LED_ENABLE_LEN               = 6,   ID_LED_ENABLE_LEN_ACK              = 6,
     ID_BT_TEST_MODE             = 0x22, ID_BT_TEST_MODE_LEN             = 6,   ID_BT_TEST_MODE_LEN_ACK            = 6,
@@ -125,14 +128,20 @@ enum FrameIdEnum
     ID_XTALK_CALIB              = 0x24, ID_XTALK_CALIB_LEN              = 5,   ID_XTALK_CALIB_LEN_ACK             = 10,
     ID_OFFSET_CALIB             = 0x25, ID_OFFSET_CALIB_LEN             = 7,   ID_OFFSET_CALIB_LEN_ACK            = 8,
     ID_LED_BREATH_PARA          = 0x26, ID_LED_BREATH_PARA_LEN          = 17,  ID_LED_BREATH_PARA_LEN_ACK         = 17,
+    ID_DEBUG_OUTPUT_ENABLE      = 0x27, ID_DEBUG_OUTPUT_ENABLE_LEN      = 6,   ID_DEBUG_OUTPUT_ENABLE_LEN_ACK     = 6,
+    ID_LED_AUTO_JUST            = 0x28, ID_LED_AUTO_JUST_LEN            = 9,   ID_LED_AUTO_JUST_LEN_ACK           = 9,
+    ID_HIGH_TMPR_PROTECT        = 0x29, ID_HIGH_TMPR_PROTECT_LEN        = 8,   ID_HIGH_TMPR_PROTECT_LEN_ACK       = 8,
+    ID_BT_REBOOT                = 0x2A, ID_BT_REBOOT_LEN                = 5,   ID_BT_REBOOT_LEN_ACK               = 6,
+    ID_ACTIVE_TIMEOUT           = 0x2B, ID_ACTIVE_TIMEOUT_LEN           = 9,   ID_ACTIVE_TIMEOUT_LEN_ACK          = 9,
+    ID_BT_RESET_FACTORY         = 0x2C, ID_BT_RESET_FACTORY_LEN         = 5,   ID_BT_RESET_FACTORY_LEN_ACK        = 6,
 };
 
 enum DataIdEnum
 {
-	DATA_ID_HISTOGRAM      = 0xA1, DATA_ID_HISTOGRAM_LEN      = 134,
-	DATA_ID_SINGLE_PIX     = 0xA2, DATA_ID_SINGLE_PIX_LEN     = 55,
-	DATA_ID_RANGE_RAW      = 0xA3, DATA_ID_RANGE_RAW_LEN      = 34,
-	DATA_ID_DETECT_STATUS  = 0xA4, DATA_ID_DETECT_STATUS_LEN  = 6,
+    DATA_ID_HISTOGRAM      = 0xA1, DATA_ID_HISTOGRAM_LEN      = 134,
+    DATA_ID_SINGLE_PIX     = 0xA2, DATA_ID_SINGLE_PIX_LEN     = 55,
+    DATA_ID_RANGE_RAW      = 0xA3, DATA_ID_RANGE_RAW_LEN      = 34,
+    DATA_ID_DETECT_STATUS  = 0xA4, DATA_ID_DETECT_STATUS_LEN  = 6,
 };
 
 typedef enum
@@ -164,7 +173,7 @@ typedef struct
     uint16_t          valid_foot_th_min_mm;    // 识别脚的最小高度阈值
     uint16_t          valid_foot_th_max_mm;    // 识别脚的最大高度阈值
     uint16_t          data_win_size;           // 用于判定的数据长度
-    uint16_t          walk_err_k;              // 行走误差线性系数，err_mm = -walk_err_k * atten_peak / 10000
+    uint16_t          walk_err_k;              // 行走误差线性系数，err_mm = -walk_err_k * lin_alive / 10000
     int16_t           dist_offset_mm;          // 距离偏置
     uint16_t          low_peak_th;             // 当atten_peak小于low_peak_th时，认为测距无效
     uint8_t           dirty_dist_th_mm;        // 当测距值小于dirty_dist_th_mm时，判断近距离遮挡或脏污
@@ -178,15 +187,26 @@ typedef struct
     uint8_t           bt_test_mode;            // 蓝牙调试模式：0-蓝牙处于低功耗工作模式，1-蓝牙响应AT指令，调试串口输出蓝牙RSSI
     int8_t            bt_lock_rssi;            // 蓝牙上锁强度值
     int8_t            bt_unlock_rssi;          // 蓝牙解锁强度值
-    uint8_t           dummy1;
+    uint8_t           debug_output_enable;     // 数据输出使能
     uint32_t          spad_int_num;            // 一次探测的打光次数
     int8_t            VI530x_Cali_CG_Pos;      // 串扰标定位置
     uint8_t           VI530x_Cali_CG_Maxratio; // 串扰标定比例
     uint16_t          VI530x_Cali_CG_Peak;     // 串扰标定峰值
-    uint32_t          led_breath_peak_x10000;  // LED呼吸的最大亮度，即PWM占空比，最大10000
-    uint32_t          led_breath_depth_x10000;
-    uint32_t          led_breath_period_ms;
+    uint32_t          led_breath_peak_x10000;  // LED呼吸的最大亮度，即PWM占空比
+    uint32_t          led_breath_depth_x10000; // LED呼吸深度，0不呼吸，1最亮到最暗
+    uint32_t          led_breath_period_ms;    // LED呼吸周期
     char              sn[16];
+    uint16_t          foot_pre_peak_mm;        // 脚踏稳定之前，必须有高于脚面的过程
+    uint16_t          foot_pre_peak_win_size;  // 脚踏稳定之前寻找pre_peak_mm的范围
+    uint16_t          led_max_noise;           // 自动亮度调节模式下，将亮度调到最亮时的最低noise值，在这个noise之上，就可以用最高亮度了。
+    uint8_t           led_min_peak_x100;       // 0~1。自动亮度调节模式下的最低亮度，即0lux时对应的亮度。
+    uint8_t           led_auto_just_enable;    // 投影亮度自动调节使能
+    uint8_t           high_tmpr_protect_enable;// 高温保护使能
+    uint8_t           high_tmpr_1;             // 摄氏度。高温保护等级1，高于次温度时，降低LED亮度为led_min_peak_x100
+    uint8_t           high_tmpr_2;             // 摄氏度。高温保护等级2，高于次温度时，投影和TOF都停止工作
+    uint8_t           dummy1;
+    uint32_t          dirty_xtalk_th;          // 当xtalk_count超过此值时，判断近距离遮挡或脏污
+    uint32_t          active_timeout_ms;       // 工作状态的超时时间
 }SysConfigStruct;
 
 
@@ -226,7 +246,7 @@ public:
     void devSetWalkErrK(int k);
     void devSetDistOffset(int offset);
     void devSetLowPeakTh(int th);
-    void devSetDirtyDistTh(int th);
+    void devSetDirtyTh(int dist_th, int xtalk_th);
     void devEraseFlash();
     void devBvdCalib();
     void devReadReg(int reg_addr);
@@ -237,6 +257,12 @@ public:
     void devXtalkCalib();
     void devOffsetCalib(int mm);
     void devSetLedBreathPara(float peak, float depth, int period);
+    void devLedAutoJust(int max_noise, float min_peak, int en);
+    void devHighTmprProtect(int en, int tmpr1, int tmpr2);
+    void devActiveTimeout(int ms);
+    void devDebugOutputEnable(int en);
+    void devBtReboot();
+    void devBtFactoryReset();
 
 private:
     uint8_t calSum(QByteArray data);

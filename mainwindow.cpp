@@ -600,7 +600,7 @@ void MainWindow::on_pushButton_eraseFlash_clicked()
 void MainWindow::on_pushButton_dirtyDistTh_clicked()
 {
     int th = ui->lineEdit_dirtyDistTh->text().toInt();
-    m_serialPortReader.devSetDirtyDistTh(th);
+//    m_serialPortReader.devSetDirtyDistTh(th);
 }
 
 
@@ -743,5 +743,17 @@ void MainWindow::on_checkBox_jumpRecord_stateChanged(int arg1)
     }
 
 
+}
+
+
+void MainWindow::on_pushButton_rebootBt_clicked()
+{
+    m_serialPortReader.devBtReboot();
+}
+
+
+void MainWindow::on_pushButton_factoryResetBt_clicked()
+{
+    m_serialPortReader.devBtFactoryReset();
 }
 

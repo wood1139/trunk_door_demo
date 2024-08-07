@@ -90,6 +90,10 @@ private slots:
 
     void on_checkBox_jumpRecord_stateChanged(int arg1);
 
+    void on_pushButton_rebootBt_clicked();
+
+    void on_pushButton_factoryResetBt_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

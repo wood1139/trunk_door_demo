@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V2.2.0</string>
+   <string>TOF调测工具V2.2.1</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -56,8 +56,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>499</width>
-             <height>1334</height>
+             <width>413</width>
+             <height>1256</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -145,6 +145,13 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="1">
+                <widget class="QPushButton" name="pushButton_btRssiSet">
+                 <property name="text">
+                  <string>配置</string>
+                 </property>
+                </widget>
+               </item>
                <item row="2" column="1">
                 <widget class="QLineEdit" name="lineEdit_btUnlockRssi"/>
                </item>
@@ -161,10 +168,17 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
-                <widget class="QPushButton" name="pushButton_btRssiSet">
+               <item row="4" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_rebootBt">
                  <property name="text">
-                  <string>配置</string>
+                  <string>重启蓝牙</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_factoryResetBt">
+                 <property name="text">
+                  <string>复位蓝牙到出厂状态</string>
                  </property>
                 </widget>
                </item>
@@ -1038,7 +1052,7 @@
      <x>0</x>
      <y>0</y>
      <width>1325</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
