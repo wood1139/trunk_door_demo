@@ -1,5 +1,6 @@
 <RCC>
-    <qresource prefix="/new/prefix1">
-        <file>pic/vanhymn.ico</file>
+    <qresource prefix="/new/prefix1"/>
+    <qresource prefix="/">
+        <file>pic/TOF.ico</file>
     </qresource>
 </RCC>
