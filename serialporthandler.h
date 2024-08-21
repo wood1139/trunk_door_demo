@@ -225,7 +225,7 @@ public:
     bool isConnectedLin();
 
     void setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tabPtr);
-    void startRecord(QString filenamePrefix, int mode, QList<int> pulseNumList, int atBvd, QList<int> bvdList, int atPulseNum, int frameNum);
+    void startRecord(QString filenamePrefix, int mode, QList<int> pulseNumList, int frameNum);
     void stopRecord();
     bool isRecording();
 
@@ -297,14 +297,9 @@ private:
 
     QString m_filenamePrefix;
     QList<int> m_pulseNumList;
-    int m_atBvd;
-    QList<int> m_bvdList;
-    int m_atPulseNum;
     int m_frameNum;
     int m_pulseNumIdx;
-    int m_bvdIdx;
     int m_frameCnt;
-
 
 signals:
     void sigLidarData(QByteArray frameData);

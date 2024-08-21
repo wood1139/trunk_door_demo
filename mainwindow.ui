@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V2.3.0</string>
+   <string>TOF调测工具V2.3.1</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -56,8 +56,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>499</width>
-             <height>1402</height>
+             <width>413</width>
+             <height>1256</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -925,41 +925,10 @@
           <item>
            <widget class="QLineEdit" name="lineEdit_pulseNumList"/>
           </item>
-          <item>
-           <widget class="QLabel" name="label_21">
-            <property name="text">
-             <string>@BVD</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_scanPulseNumListAtBvd"/>
-          </item>
          </layout>
         </item>
         <item row="2" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QLabel" name="label_20">
-            <property name="text">
-             <string> 遍历BVD</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_bvdList"/>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_22">
-            <property name="text">
-             <string>@打光次数</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_scanBvdAtPulseNum"/>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="horizontalLayout_6"/>
         </item>
         <item row="3" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -1052,7 +1021,7 @@
      <x>0</x>
      <y>0</y>
      <width>1325</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

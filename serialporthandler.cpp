@@ -131,19 +131,14 @@ void SerialPortHandler::setDataPtr(QLineSeries *LinePtr, QStandardItemModel *tab
     m_tableModelPtr = tabPtr;
 }
 
-void SerialPortHandler::startRecord(QString filenamePrefix, int mode, QList<int> pulseNumList, int atBvd, QList<int> bvdList, int atPulseNum, int frameNum)
+void SerialPortHandler::startRecord(QString filenamePrefix, int mode, QList<int> pulseNumList, int frameNum)
 {
     m_filenamePrefix = filenamePrefix;
     m_mode = mode;
     m_pulseNumList = pulseNumList;
-    m_atBvd = atBvd;
-    m_bvdList = bvdList;
-    m_atPulseNum = atPulseNum;
     m_frameNum = frameNum;
 
     m_pulseNumIdx = 0;
-    m_bvdIdx = 0;
-
     m_frameCnt = -2;  // 丢弃前2帧，可能由于切换参数数据不稳定
     scheduleRecord();
 }
@@ -155,18 +150,8 @@ void SerialPortHandler::scheduleRecord()
     if(m_pulseNumList.size()>0 && m_pulseNumIdx<m_pulseNumList.size())
     {
         pulseNum = m_pulseNumList[m_pulseNumIdx];
-        bvd = m_atBvd;
         m_pulseNumIdx++;
         devSetLdTrigNum(pulseNum);
-        devWriteReg(0x24f, bvd);
-    }
-    else if(m_bvdList.size()>0 && m_bvdIdx<m_bvdList.size())
-    {
-        pulseNum = m_atPulseNum;
-        bvd = m_bvdList[m_bvdIdx];
-        m_bvdIdx++;
-        devSetLdTrigNum(pulseNum);
-        devWriteReg(0x24f, bvd);
     }
     else if(m_frameCnt >= m_frameNum)  // 列表都为空，或者有列表且存储完成
     {
@@ -201,6 +186,7 @@ void SerialPortHandler::scheduleRecord()
             m_fstream << "idx,data,\n";
         }
 
+        m_frameCnt = -2;  // 丢弃前2帧，可能由于切换参数数据不稳定
         m_isRecording = true;
     }
 }

@@ -447,27 +447,12 @@ void MainWindow::on_pushButton_record_clicked()
             pulseNumList.append(str.toInt());
         }
     }
-    int atBvd = ui->lineEdit_scanPulseNumListAtBvd->text().toInt();
-
-    QString bvdListStr = ui->lineEdit_bvdList->text();
-    QList<int> bvdList;
-    if(bvdListStr.size() > 0)
-    {
-        tmpStrList = bvdListStr.split(" ");
-        foreach(const QString &str, tmpStrList)
-        {
-            bvdList.append(str.toInt());
-        }
-    }
-    int atPulseNum = ui->lineEdit_scanBvdAtPulseNum->text().toInt();
 
     int frameNum = ui->lineEdit_setFramNum->text().toInt();
 
     qDebug() << "frameNum=" << frameNum;
     qDebug() << "pulseNumList.size()=" << pulseNumList.size();
     qDebug() << "pulseNumList: " << pulseNumList;
-    qDebug() << "bvdList.size()=" << bvdList.size();
-    qDebug() << "bvdList:" << bvdList;
 
     QString filenamePrefix = "data/mode_" + modeStr + "-realdist_" + ui->lineEdit_realDist->text() + "-ref_" + ui->lineEdit_ref->text();
 
@@ -478,11 +463,10 @@ void MainWindow::on_pushButton_record_clicked()
     }
     else
     {
-        m_serialPortReader.startRecord(filenamePrefix, ui->comboBox_mode->currentIndex(), pulseNumList, atBvd, bvdList, atPulseNum, frameNum);
+        m_serialPortReader.startRecord(filenamePrefix, ui->comboBox_mode->currentIndex(), pulseNumList, frameNum);
         ui->pushButton_record->setText("停止录制");
     }
 }
-
 
 void MainWindow::on_pushButton_openDataDir_clicked()
 {
@@ -599,7 +583,7 @@ void MainWindow::on_pushButton_eraseFlash_clicked()
 
 void MainWindow::on_pushButton_dirtyDistTh_clicked()
 {
-    int th = ui->lineEdit_dirtyDistTh->text().toInt();
+//    int th = ui->lineEdit_dirtyDistTh->text().toInt();
 //    m_serialPortReader.devSetDirtyDistTh(th);
 }
 
