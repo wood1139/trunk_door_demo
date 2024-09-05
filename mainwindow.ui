@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V2.3.1</string>
+   <string>TOF调测工具V2.4.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -56,8 +56,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>413</width>
-             <height>1256</height>
+             <width>457</width>
+             <height>1402</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -868,6 +868,36 @@
           </layout>
          </widget>
         </item>
+        <item row="0" column="1">
+         <widget class="QGroupBox" name="groupBox_12">
+          <property name="title">
+           <string>写入距离标定参数</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_16">
+           <item row="0" column="0">
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <widget class="QLineEdit" name="lineEdit_distCorrParaFilePath"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_browseDistCorrParaFile">
+               <property name="text">
+                <string> 浏览参数文件</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="pushButton_writeDistCorrParaFile">
+             <property name="text">
+              <string>写入</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_3">
@@ -1021,7 +1051,7 @@
      <x>0</x>
      <y>0</y>
      <width>1325</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

@@ -51,9 +51,10 @@
 #include "serialporthandler.h"
 
 #include <QCoreApplication>
-#include<QDebug>
+#include <QDebug>
 #include <QSerialPortInfo>
 #include <QDateTime>
+#include <QThread>
 
 SerialPortHandler::SerialPortHandler(QObject *parent) :
     QObject(parent)
@@ -1014,4 +1015,62 @@ void SerialPortHandler::devBtFactoryReset()
     cmd[4] = calSum(cmd.mid(0,4));
 
     serialSendCmd(cmd);
+}
+
+void SerialPortHandler::devDistCorrPara(SysConfigStruct &config)
+{
+    QByteArray cmd;
+    for(int i=0; i<DIST_CORR_TABLE_LEN; i++)
+    {
+        cmd.resize(20);
+        cmd[0] = 0x8F;
+        cmd[1] = 0xD4;
+        cmd[2] = 20;
+        cmd[3] = ID_NEAR_RANGE_TAB;
+        cmd[4] = i;
+        memcpy(cmd.data() + 5, &config.nearRangeCorrTable[i][0], 7*sizeof(int16_t));
+        cmd[19] = calSum(cmd.mid(0,19));
+        serialSendCmd(cmd);
+        QThread::msleep(10);
+    }
+
+    cmd.resize(35);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 35;
+    cmd[3] = ID_DIST_CORR_PARA;
+    cmd[4] = ((int16_t)config.dist_offset_mm) & 0xFF;
+    cmd[5] = ((int16_t)config.dist_offset_mm>>8) & 0xFF;
+    cmd[6] = ((int16_t)config.norm_peak_err_p[0]) & 0xFF;
+    cmd[7] = ((int16_t)config.norm_peak_err_p[0]>>8) & 0xFF;
+    cmd[8] = ((int16_t)config.norm_peak_err_p[1]) & 0xFF;
+    cmd[9] = ((int16_t)config.norm_peak_err_p[1]>>8) & 0xFF;
+    cmd[10] = ((int16_t)config.atten_peak_err_p1[0]) & 0xFF;
+    cmd[11] = ((int16_t)config.atten_peak_err_p1[0]>>8) & 0xFF;
+    cmd[12] = ((int16_t)config.atten_peak_err_p1[1]) & 0xFF;
+    cmd[13] = ((int16_t)config.atten_peak_err_p1[1]>>8) & 0xFF;
+    cmd[14] = ((int16_t)config.atten_peak_err_p2[0]) & 0xFF;
+    cmd[15] = ((int16_t)config.atten_peak_err_p2[0]>>8) & 0xFF;
+    cmd[16] = ((int16_t)config.atten_peak_err_p2[1]) & 0xFF;
+    cmd[17] = ((int16_t)config.atten_peak_err_p2[1]>>8) & 0xFF;
+    cmd[18] = ((int16_t)config.peak_transition_zone[0]) & 0xFF;
+    cmd[19] = ((int16_t)config.peak_transition_zone[0]>>8) & 0xFF;
+    cmd[20] = ((int16_t)config.peak_transition_zone[1]) & 0xFF;
+    cmd[21] = ((int16_t)config.peak_transition_zone[1]>>8) & 0xFF;
+    cmd[22] = ((int16_t)config.dist_transition_zone[0]) & 0xFF;
+    cmd[23] = ((int16_t)config.dist_transition_zone[0]>>8) & 0xFF;
+    cmd[24] = ((int16_t)config.dist_transition_zone[1]) & 0xFF;
+    cmd[25] = ((int16_t)config.dist_transition_zone[1]>>8) & 0xFF;
+    cmd[26] = ((int16_t)config.dist_tmpr_drift_para[0]) & 0xFF;
+    cmd[27] = ((int16_t)config.dist_tmpr_drift_para[0]>>8) & 0xFF;
+    cmd[28] = ((int16_t)config.dist_tmpr_drift_para[1]) & 0xFF;
+    cmd[29] = ((int16_t)config.dist_tmpr_drift_para[1]>>8) & 0xFF;
+    cmd[30] = ((int16_t)config.dist_tmpr_drift_para[2]) & 0xFF;
+    cmd[31] = ((int16_t)config.dist_tmpr_drift_para[2]>>8) & 0xFF;
+    cmd[32] = ((int16_t)config.dist_tmpr_drift_para[3]) & 0xFF;
+    cmd[33] = ((int16_t)config.dist_tmpr_drift_para[3]>>8) & 0xFF;
+
+    cmd[34] = calSum(cmd.mid(0,34));
+    serialSendCmd(cmd);
+
 }

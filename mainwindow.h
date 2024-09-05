@@ -94,6 +94,10 @@ private slots:
 
     void on_pushButton_factoryResetBt_clicked();
 
+    void on_pushButton_writeDistCorrParaFile_clicked();
+
+    void on_pushButton_browseDistCorrParaFile_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
@@ -115,6 +119,7 @@ private:
     int mDistFrameCnt;
 
     void dispDeviceConfig();
+    void printDeviceConfig(const SysConfigStruct &config);
 
 public slots:
     void slotHandleLidarData(QByteArray frameData);

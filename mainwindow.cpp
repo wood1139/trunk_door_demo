@@ -6,6 +6,11 @@
 #include <QUrl>
 #include <QMessageBox>
 #include <cstring>
+#include <QFileDialog>
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -351,6 +356,8 @@ void MainWindow::dispDeviceConfig()
 {
     qDebug() << "\n\n read device config done. ";
 
+    printDeviceConfig(mDevConfigStruct);
+
     ui->lineEdit_sn->setText(QString::fromLatin1(mDevConfigStruct.sn, 16));
 
     ui->comboBox_jtxWorkMode->setCurrentIndex(mDevConfigStruct.jtx_work_mode);
@@ -410,6 +417,81 @@ void MainWindow::dispDeviceConfig()
     ui->lineEdit_ledBreathPeak->setText(QString::number((float)mDevConfigStruct.led_breath_peak_x10000/10000.0));
     ui->lineEdit_ledBreathDepth->setText(QString::number((float)mDevConfigStruct.led_breath_depth_x10000/10000.0));
     ui->lineEdit_ledBreathPeriod->setText(QString::number(mDevConfigStruct.led_breath_period_ms));
+}
+
+void MainWindow::printDeviceConfig(const SysConfigStruct &config)
+{
+    qDebug() << "SysConfigStruct:";
+    qDebug() << "  vi4302_mode:" << config.vi4302_mode;
+    qDebug() << "  is_feet_detect:" << static_cast<int>(config.is_feet_detect);
+    qDebug() << "  hardline_pin_sel:" << static_cast<int>(config.hardline_pin_sel);
+    qDebug() << "  is_ranging_enable:" << static_cast<int>(config.is_ranging_enable);
+    qDebug() << "  hardline_pin_mode:" << static_cast<int>(config.hardline_pin_mode);
+    qDebug() << "  save_config_cnt:" << config.save_config_cnt;
+    qDebug() << "  restore_default_cnt:" << config.restore_default_cnt;
+    qDebug() << "  ld_trig_pwidth_100ps:" << config.ld_trig_pwidth_100ps;
+    qDebug() << "  sample_rate:" << config.sample_rate;
+    qDebug() << "  hardline_pulse_ms:" << config.hardline_pulse_ms;
+    qDebug() << "  gnd_stable_th_mm:" << config.gnd_stable_th_mm;
+    qDebug() << "  foot_stable_th_mm:" << config.foot_stable_th_mm;
+    qDebug() << "  valid_foot_th_min_mm:" << config.valid_foot_th_min_mm;
+    qDebug() << "  valid_foot_th_max_mm:" << config.valid_foot_th_max_mm;
+    qDebug() << "  data_win_size:" << config.data_win_size;
+    qDebug() << "  walk_err_k:" << config.walk_err_k;
+    qDebug() << "  dist_offset_mm:" << config.dist_offset_mm;
+    qDebug() << "  low_peak_th:" << config.low_peak_th;
+    qDebug() << "  dirty_dist_th_mm:" << static_cast<int>(config.dirty_dist_th_mm);
+    qDebug() << "  vi4302_bvd_val:" << static_cast<int>(config.vi4302_bvd_val);
+    qDebug() << "  vi4302_tdc_val:" << static_cast<int>(config.vi4302_tdc_val);
+    qDebug() << "  vi4302_calib_tmpr:" << static_cast<int>(config.vi4302_calib_tmpr);
+    qDebug() << "  hardline_trig_delay_ms:" << config.hardline_trig_delay_ms;
+    qDebug() << "  led_enable:" << static_cast<int>(config.led_enable);
+    qDebug() << "  jtx_work_mode:" << static_cast<int>(config.jtx_work_mode);
+    qDebug() << "  foot_in_hold_max_times:" << config.foot_in_hold_max_times;
+    qDebug() << "  bt_test_mode:" << static_cast<int>(config.bt_test_mode);
+    qDebug() << "  bt_lock_rssi:" << static_cast<int>(config.bt_lock_rssi);
+    qDebug() << "  bt_unlock_rssi:" << static_cast<int>(config.bt_unlock_rssi);
+    qDebug() << "  debug_output_enable:" << static_cast<int>(config.debug_output_enable);
+    qDebug() << "  spad_int_num:" << config.spad_int_num;
+    qDebug() << "  VI530x_Cali_CG_Pos:" << static_cast<int>(config.VI530x_Cali_CG_Pos);
+    qDebug() << "  VI530x_Cali_CG_Maxratio:" << static_cast<int>(config.VI530x_Cali_CG_Maxratio);
+    qDebug() << "  VI530x_Cali_CG_Peak:" << config.VI530x_Cali_CG_Peak;
+    qDebug() << "  led_breath_peak_x10000:" << config.led_breath_peak_x10000;
+    qDebug() << "  led_breath_depth_x10000:" << config.led_breath_depth_x10000;
+    qDebug() << "  led_breath_period_ms:" << config.led_breath_period_ms;
+    qDebug() << "  sn:" << QString::fromLatin1(config.sn);
+    qDebug() << "  foot_pre_peak_mm:" << config.foot_pre_peak_mm;
+    qDebug() << "  foot_pre_peak_win_size:" << config.foot_pre_peak_win_size;
+    qDebug() << "  led_max_noise:" << config.led_max_noise;
+    qDebug() << "  led_min_peak_x100:" << static_cast<int>(config.led_min_peak_x100);
+    qDebug() << "  led_auto_just_enable:" << static_cast<int>(config.led_auto_just_enable);
+    qDebug() << "  high_tmpr_protect_enable:" << static_cast<int>(config.high_tmpr_protect_enable);
+    qDebug() << "  high_tmpr_1:" << static_cast<int>(config.high_tmpr_1);
+    qDebug() << "  high_tmpr_2:" << static_cast<int>(config.high_tmpr_2);
+    qDebug() << "  dummy1:" << static_cast<int>(config.dummy1);
+    qDebug() << "  dirty_xtalk_th:" << config.dirty_xtalk_th;
+    qDebug() << "  active_timeout_ms:" << config.active_timeout_ms;
+    qDebug() << "  bt_hold_time_ms:" << config.bt_hold_time_ms;
+    qDebug() << "  led_min_noise:" << config.led_min_noise;
+    qDebug() << "  bvd_tmpr_k_x10000:" << config.bvd_tmpr_k_x10000;
+
+    // 打印二维数组
+    qDebug() << "  nearRangeCorrTable:";
+    for (int i = 0; i < DIST_CORR_TABLE_LEN; ++i) {
+        qDebug() << "    " << config.nearRangeCorrTable[i][0] << config.nearRangeCorrTable[i][1]
+                 << config.nearRangeCorrTable[i][2] << config.nearRangeCorrTable[i][3]
+                 << config.nearRangeCorrTable[i][4] << config.nearRangeCorrTable[i][5]
+                 << config.nearRangeCorrTable[i][6];
+    }
+
+    // 打印一维数组
+    qDebug() << "  norm_peak_err_p:" << config.norm_peak_err_p[0] << config.norm_peak_err_p[1];
+    qDebug() << "  atten_peak_err_p1:" << config.atten_peak_err_p1[0] << config.atten_peak_err_p1[1];
+    qDebug() << "  atten_peak_err_p2:" << config.atten_peak_err_p2[0] << config.atten_peak_err_p2[1];
+    qDebug() << "  peak_transition_zone:" << config.peak_transition_zone[0] << config.peak_transition_zone[1];
+    qDebug() << "  dist_transition_zone:" << config.dist_transition_zone[0] << config.dist_transition_zone[1];
+    qDebug() << "  dist_tmpr_drift_para:" << config.dist_tmpr_drift_para[0] << config.dist_tmpr_drift_para[1]
+             << config.dist_tmpr_drift_para[2] << config.dist_tmpr_drift_para[3];
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -739,5 +821,109 @@ void MainWindow::on_pushButton_rebootBt_clicked()
 void MainWindow::on_pushButton_factoryResetBt_clicked()
 {
     m_serialPortReader.devBtFactoryReset();
+}
+
+
+void MainWindow::on_pushButton_writeDistCorrParaFile_clicked()
+{
+    SysConfigStruct config;
+    QString fileName = ui->lineEdit_distCorrParaFilePath->text();
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Could not open file for reading";
+            return;
+        }
+
+        QByteArray fileData = file.readAll();
+        file.close();
+
+        QJsonDocument jsonDoc(QJsonDocument::fromJson(fileData));
+
+        if (jsonDoc.isObject()) {
+            QJsonObject jsonObj = jsonDoc.object();
+
+            // 读取 distOffset
+            if (jsonObj.contains("distOffset") && jsonObj["distOffset"].isDouble()) {
+                config.dist_offset_mm = jsonObj["distOffset"].toInt();
+                qDebug() << "distOffset:" << config.dist_offset_mm;
+            }
+
+            // 读取 nearCorrTab
+            if (jsonObj.contains("nearCorrTab") && jsonObj["nearCorrTab"].isArray()) {
+                QJsonArray nearCorrTabArray = jsonObj["nearCorrTab"].toArray();
+                for (int i = 0; i < nearCorrTabArray.size(); ++i) {
+                    if (nearCorrTabArray[i].isArray()) {
+                        QJsonArray rowArray = nearCorrTabArray[i].toArray();
+                        for (int j = 0; j < rowArray.size(); ++j) {
+                            config.nearRangeCorrTable[i][j] = rowArray[j].toInt();
+                            qDebug() << "nearCorrTab[" << i << "][" << j << "]:" << rowArray[j].toInt();
+                        }
+                    }
+                }
+            }
+
+            // 读取 nPeakErrK
+            if (jsonObj.contains("nPeakErrK") && jsonObj["nPeakErrK"].isArray()) {
+                QJsonArray nPeakErrKArray = jsonObj["nPeakErrK"].toArray();
+                for (int i = 0; i < nPeakErrKArray.size(); ++i) {
+                    config.norm_peak_err_p[i] = nPeakErrKArray[i].toInt();
+                    qDebug() << "nPeakErrK[" << i << "]:" << nPeakErrKArray[i].toInt();
+                }
+            }
+
+            // 读取 aPeakErrK1
+            if (jsonObj.contains("aPeakErrK1") && jsonObj["aPeakErrK1"].isArray()) {
+                QJsonArray aPeakErrK1Array = jsonObj["aPeakErrK1"].toArray();
+                for (int i = 0; i < aPeakErrK1Array.size(); ++i) {
+                    config.atten_peak_err_p1[i] = aPeakErrK1Array[i].toInt();
+                    qDebug() << "aPeakErrK1[" << i << "]:" << aPeakErrK1Array[i].toInt();
+                }
+            }
+
+            // 读取 aPeakErrK2
+            if (jsonObj.contains("aPeakErrK2") && jsonObj["aPeakErrK2"].isArray()) {
+                QJsonArray aPeakErrK2Array = jsonObj["aPeakErrK2"].toArray();
+                for (int i = 0; i < aPeakErrK2Array.size(); ++i) {
+                    config.atten_peak_err_p2[i] = aPeakErrK2Array[i].toInt();
+                    qDebug() << "aPeakErrK2[" << i << "]:" << aPeakErrK2Array[i].toInt();
+                }
+            }
+
+            // 补充一些固定值
+            config.peak_transition_zone[0] = 100;
+            config.peak_transition_zone[1] = 120;
+            config.dist_transition_zone[0] = 2000;
+            config.dist_transition_zone[1] = 2500;
+            config.dist_tmpr_drift_para[0] = 0;
+            config.dist_tmpr_drift_para[1] = 0;
+            config.dist_tmpr_drift_para[2] = 0;
+            config.dist_tmpr_drift_para[3] = 0;
+
+            printDeviceConfig(config);
+
+            m_serialPortReader.devDistCorrPara(config);
+
+        } else {
+            qDebug() << "Invalid JSON document";
+        }
+    } else {
+        qDebug() << "No file selected.";
+    }
+}
+
+
+void MainWindow::on_pushButton_browseDistCorrParaFile_clicked()
+{
+    // 过滤文件类型，只显示 .json 文件
+    QString filter = "JSON Files (*.json)";
+
+    // 打开文件对话框
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    "Open JSON File",  // 对话框标题
+                                                    "",                // 默认路径
+                                                    filter);           // 文件过滤器
+
+    ui->lineEdit_distCorrParaFilePath->setText(fileName);
 }
 
