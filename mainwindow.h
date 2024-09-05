@@ -8,6 +8,7 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
 #include <QStandardItemModel>
+#include <QLabel>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -121,6 +122,11 @@ private:
     void dispDeviceConfig();
     void printDeviceConfig(const SysConfigStruct &config);
 
+    QLabel *m_labelPixCenterPoint;
+    QLabel *m_labelPixCircle;
+    void pixCenterMarkerInit();
+    void pixCenterMarkerPosition(int x, int y);
+
 public slots:
     void slotHandleLidarData(QByteArray frameData);
     void slotSwitchImg();
@@ -128,5 +134,8 @@ public slots:
     void slotSetAxisRange(int xmin, int xmax, int ymin, int ymax);
     void slotRecordStop();
     void slotProcDist(int mm);
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 };
 #endif // MAINWINDOW_H

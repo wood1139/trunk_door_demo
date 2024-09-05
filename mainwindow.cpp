@@ -100,11 +100,59 @@ MainWindow::MainWindow(QWidget *parent)
    on_pushButton_refreshComList_clicked();
 
    mDistFrameCnt = 0;
+
+   pixCenterMarkerInit();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::pixCenterMarkerInit()
+{
+    int circleRadius = 15;
+    QWidget *specificTab = ui->tabWidget->widget(1);
+    m_labelPixCircle = new QLabel("", specificTab);
+    m_labelPixCircle->setFixedSize(circleRadius*2, circleRadius*2);
+    m_labelPixCircle->raise();
+    m_labelPixCircle->setStyleSheet(
+            QString("background-color: transparent; "
+                    "border: %1px solid red; "
+                    "border-radius: %2px;")
+            .arg(1)      // 边框宽度
+            .arg(circleRadius)         // 圆形边框的半径（直径的一半）
+        );
+
+    int pointRadius = 3;
+    m_labelPixCenterPoint = new QLabel("", specificTab);
+    m_labelPixCenterPoint->setFixedSize(pointRadius*2, pointRadius*2);
+    m_labelPixCenterPoint->raise();
+    m_labelPixCenterPoint->setStyleSheet("background-color: red;");
+    m_labelPixCenterPoint->setStyleSheet(
+            QString("background-color: red; "
+                    "border: %1px solid red; "
+                    "border-radius: %2px;")
+            .arg(0)      // 边框宽度
+            .arg(pointRadius)
+        );
+}
+
+void MainWindow::pixCenterMarkerPosition(int x, int y)
+{
+    m_labelPixCircle->move(x-15, y-15);
+    m_labelPixCenterPoint->move(x-3, y-3);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event); // 忽略事件参数（如果不需要）
+
+    // 获取 QTableView 的位置和大小
+    QRect tableViewGeometry = ui->tableView->geometry();
+    int tableViewCenterX = tableViewGeometry.x() + tableViewGeometry.width() / 2;
+    int tableViewCenterY = tableViewGeometry.y() + tableViewGeometry.height() / 2;
+    pixCenterMarkerPosition(tableViewCenterX, tableViewCenterY);
 }
 
 void MainWindow::on_pushButton_connectCom_clicked()
