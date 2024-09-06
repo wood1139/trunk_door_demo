@@ -224,7 +224,7 @@ typedef struct
     int16_t           atten_peak_err_p2[2];    // atten peak行走误差修正系数，大信号第二段
     uint16_t          peak_transition_zone[2]; // 大小信号的切换区间
     uint16_t          dist_transition_zone[2]; // 远近距离的切换区间
-    int16_t           dist_tmpr_drift_para[4]; // 距离温漂参数，4列分别为：2次项系数、一次项系数、常数项、标定时的温度
+    int16_t           dist_tmpr_drift_para[2]; // 距离温漂参数，二次项系数和一次项系数，x1000
 }SysConfigStruct;
 
 

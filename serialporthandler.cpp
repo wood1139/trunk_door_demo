@@ -1034,10 +1034,10 @@ void SerialPortHandler::devDistCorrPara(SysConfigStruct &config)
         QThread::msleep(10);
     }
 
-    cmd.resize(35);
+    cmd.resize(31);
     cmd[0] = 0x8F;
     cmd[1] = 0xD4;
-    cmd[2] = 35;
+    cmd[2] = 31;
     cmd[3] = ID_DIST_CORR_PARA;
     cmd[4] = ((int16_t)config.dist_offset_mm) & 0xFF;
     cmd[5] = ((int16_t)config.dist_offset_mm>>8) & 0xFF;
@@ -1065,12 +1065,8 @@ void SerialPortHandler::devDistCorrPara(SysConfigStruct &config)
     cmd[27] = ((int16_t)config.dist_tmpr_drift_para[0]>>8) & 0xFF;
     cmd[28] = ((int16_t)config.dist_tmpr_drift_para[1]) & 0xFF;
     cmd[29] = ((int16_t)config.dist_tmpr_drift_para[1]>>8) & 0xFF;
-    cmd[30] = ((int16_t)config.dist_tmpr_drift_para[2]) & 0xFF;
-    cmd[31] = ((int16_t)config.dist_tmpr_drift_para[2]>>8) & 0xFF;
-    cmd[32] = ((int16_t)config.dist_tmpr_drift_para[3]) & 0xFF;
-    cmd[33] = ((int16_t)config.dist_tmpr_drift_para[3]>>8) & 0xFF;
 
-    cmd[34] = calSum(cmd.mid(0,34));
+    cmd[30] = calSum(cmd.mid(0,30));
     serialSendCmd(cmd);
 
 }

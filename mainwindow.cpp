@@ -538,8 +538,7 @@ void MainWindow::printDeviceConfig(const SysConfigStruct &config)
     qDebug() << "  atten_peak_err_p2:" << config.atten_peak_err_p2[0] << config.atten_peak_err_p2[1];
     qDebug() << "  peak_transition_zone:" << config.peak_transition_zone[0] << config.peak_transition_zone[1];
     qDebug() << "  dist_transition_zone:" << config.dist_transition_zone[0] << config.dist_transition_zone[1];
-    qDebug() << "  dist_tmpr_drift_para:" << config.dist_tmpr_drift_para[0] << config.dist_tmpr_drift_para[1]
-             << config.dist_tmpr_drift_para[2] << config.dist_tmpr_drift_para[3];
+    qDebug() << "  dist_tmpr_drift_para:" << config.dist_tmpr_drift_para[0] << config.dist_tmpr_drift_para[1];
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -891,6 +890,15 @@ void MainWindow::on_pushButton_writeDistCorrParaFile_clicked()
         if (jsonDoc.isObject()) {
             QJsonObject jsonObj = jsonDoc.object();
 
+            // 读取温漂系数
+            if (jsonObj.contains("distTmprPara") && jsonObj["distTmprPara"].isArray()) {
+                QJsonArray distTmprParaArray = jsonObj["distTmprPara"].toArray();
+                for (int i = 0; i < distTmprParaArray.size(); ++i) {
+                    config.dist_tmpr_drift_para[i] = distTmprParaArray[i].toInt();
+                    qDebug() << "distTmprPara[" << i << "]:" << distTmprParaArray[i].toInt();
+                }
+            }
+
             // 读取 distOffset
             if (jsonObj.contains("distOffset") && jsonObj["distOffset"].isDouble()) {
                 config.dist_offset_mm = jsonObj["distOffset"].toInt();
@@ -943,10 +951,6 @@ void MainWindow::on_pushButton_writeDistCorrParaFile_clicked()
             config.peak_transition_zone[1] = 120;
             config.dist_transition_zone[0] = 2000;
             config.dist_transition_zone[1] = 2500;
-            config.dist_tmpr_drift_para[0] = 0;
-            config.dist_tmpr_drift_para[1] = 0;
-            config.dist_tmpr_drift_para[2] = 0;
-            config.dist_tmpr_drift_para[3] = 0;
 
             printDeviceConfig(config);
 
