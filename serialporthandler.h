@@ -325,6 +325,7 @@ signals:
     void sigSetAxisRange(int xmin, int xmax, int ymin, int ymax);
     void sigRecordStop();
     void sigProcDist(int mm);
+    void sigSetCenterMarkerPosition(qreal xRatio, qreal yRatio);
 };
 
 #endif // SERIALPORTHANDLER_H

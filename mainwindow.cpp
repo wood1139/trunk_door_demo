@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigSetAxisRange, this, &MainWindow::slotSetAxisRange);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigRecordStop, this, &MainWindow::slotRecordStop);
     QObject::connect(&m_serialPortReader, &SerialPortHandler::sigProcDist, this, &MainWindow::slotProcDist);
+    QObject::connect(&m_serialPortReader, &SerialPortHandler::sigSetCenterMarkerPosition, this, &MainWindow::slotPixCenterMarkerPosition);
     qDebug() << "app start!";
 
     showImg(0);
@@ -57,7 +58,9 @@ MainWindow::MainWindow(QWidget *parent)
     // 填充数据
     for (int row = 0; row < 5; ++row) {
         for (int column = 0; column < 5; ++column) {
-            m_tableModel->setData(m_tableModel->index(row,column,QModelIndex()), QString::number(0));
+            QStandardItem *item = new QStandardItem(QString::number(0));
+            item->setTextAlignment(Qt::AlignCenter);  // 设置居中对齐
+            m_tableModel->setItem(row, column, item);
         }
     }
    ui->tableView->setModel(m_tableModel);
@@ -118,7 +121,7 @@ void MainWindow::pixCenterMarkerInit()
     m_labelPixCircle->raise();
     m_labelPixCircle->setStyleSheet(
             QString("background-color: transparent; "
-                    "border: %1px solid red; "
+                    "border: %1px solid green; "
                     "border-radius: %2px;")
             .arg(1)      // 边框宽度
             .arg(circleRadius)         // 圆形边框的半径（直径的一半）
@@ -128,31 +131,31 @@ void MainWindow::pixCenterMarkerInit()
     m_labelPixCenterPoint = new QLabel("", specificTab);
     m_labelPixCenterPoint->setFixedSize(pointRadius*2, pointRadius*2);
     m_labelPixCenterPoint->raise();
-    m_labelPixCenterPoint->setStyleSheet("background-color: red;");
+    m_labelPixCenterPoint->setStyleSheet("background-color: green;");
     m_labelPixCenterPoint->setStyleSheet(
-            QString("background-color: red; "
-                    "border: %1px solid red; "
+            QString("background-color: green; "
+                    "border: %1px solid green; "
                     "border-radius: %2px;")
             .arg(0)      // 边框宽度
             .arg(pointRadius)
         );
 }
 
-void MainWindow::pixCenterMarkerPosition(int x, int y)
+void MainWindow::slotPixCenterMarkerPosition(qreal xRatio, qreal yRatio)
 {
-    m_labelPixCircle->move(x-15, y-15);
-    m_labelPixCenterPoint->move(x-3, y-3);
+    // 获取 QTableView 的位置和大小
+    QRect tableViewGeometry = ui->tableView->geometry();
+    int tableViewCenterX = tableViewGeometry.x() + tableViewGeometry.width() * xRatio;
+    int tableViewCenterY = tableViewGeometry.y() + tableViewGeometry.height() * yRatio;
+
+    m_labelPixCircle->move(tableViewCenterX-15, tableViewCenterY-15);
+    m_labelPixCenterPoint->move(tableViewCenterX-3, tableViewCenterY-3);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event); // 忽略事件参数（如果不需要）
-
-    // 获取 QTableView 的位置和大小
-    QRect tableViewGeometry = ui->tableView->geometry();
-    int tableViewCenterX = tableViewGeometry.x() + tableViewGeometry.width() / 2;
-    int tableViewCenterY = tableViewGeometry.y() + tableViewGeometry.height() / 2;
-    pixCenterMarkerPosition(tableViewCenterX, tableViewCenterY);
+    slotPixCenterMarkerPosition(0.5, 0.5);
 }
 
 void MainWindow::on_pushButton_connectCom_clicked()

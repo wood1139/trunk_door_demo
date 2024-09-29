@@ -256,6 +256,10 @@ void SerialPortHandler::handleData()
     }
     else if(uint8_t(m_frameData[3])==0xA2)
     {// sigle pixel data
+        double sumWeight = 0.0;
+        double sumX = 0.0;
+        double sumY = 0.0;
+
         for (int row = 0; row < 5; ++row) {
             for (int column = 0; column < 5; ++column) {
                 uint16_t val = uint8_t(m_frameData[4+row*10+column*2]) + (uint8_t(m_frameData[5+row*10+column*2])<<8);
@@ -268,7 +272,15 @@ void SerialPortHandler::handleData()
                 }
                 QColor backgroundColor(255*ck,0,(1-ck)*255);
                 item->setData(backgroundColor, Qt::BackgroundRole);
+                item->setTextAlignment(Qt::AlignCenter);
                 m_tableModelPtr->setItem(row, column, item);
+
+                if(row!=0 && row!=4 && column!=0 && column!=4)
+                {
+                    sumWeight += val;      // 累计总权重
+                    sumX += val * row;     // 按权重累计X坐标
+                    sumY += val * column;  // 按权重累计Y坐标
+                }
 
                 if(m_isRecording && m_frameCnt>=0)
                 {
@@ -280,6 +292,11 @@ void SerialPortHandler::handleData()
         {
             m_fstream << "\n";
         }
+
+        // 计算加权平均后的中心点坐标
+        double xCentroid = sumX / sumWeight / 4;
+        double yCentroid = sumY / sumWeight / 4;
+        emit sigSetCenterMarkerPosition(xCentroid, yCentroid);
     }
     else if(uint8_t(m_frameData[3])==0xA3)
     {// range raw data

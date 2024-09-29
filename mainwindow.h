@@ -125,7 +125,7 @@ private:
     QLabel *m_labelPixCenterPoint;
     QLabel *m_labelPixCircle;
     void pixCenterMarkerInit();
-    void pixCenterMarkerPosition(int x, int y);
+    void pixCenterMarkerPosition(qreal xRatio, qreal yRatio);
 
 public slots:
     void slotHandleLidarData(QByteArray frameData);
@@ -134,6 +134,7 @@ public slots:
     void slotSetAxisRange(int xmin, int xmax, int ymin, int ymax);
     void slotRecordStop();
     void slotProcDist(int mm);
+    void slotPixCenterMarkerPosition(qreal xRatio, qreal yRatio);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
