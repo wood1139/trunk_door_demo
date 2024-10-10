@@ -121,6 +121,7 @@ enum FrameIdEnum
     ID_SET_JTX_WORK_MODE        = 0x15, ID_SET_JTX_WORK_MODE_LEN        = 6,   ID_SET_JTX_WORK_MODE_LEN_ACK       = 6,
     ID_WRITE_SN                 = 0x16, ID_WRITE_SN_LEN                 = 21,  ID_WRITE_SN_LEN_ACK                = 6,
     ID_READ_ALL_PARAMS_PACK     = 0x17, ID_READ_ALL_PARAMS_PACK_LEN     = 7,   ID_READ_ALL_PARAMS_PACK_LEN_ACK    = 6,
+    ID_OUTPUT_FORMAT            = 0x18, ID_OUTPUT_FORMAT_LEN            = 6,   ID_OUTPUT_FORMAT_LEN_ACK           = 6,
     ID_BVD_CALIB                = 0x20, ID_BVD_CALIB_LEN                = 5,   ID_BVD_CALIB_LEN_ACK               = 7,
     ID_LED_ENABLE               = 0x21, ID_LED_ENABLE_LEN               = 6,   ID_LED_ENABLE_LEN_ACK              = 6,
     ID_BT_TEST_MODE             = 0x22, ID_BT_TEST_MODE_LEN             = 6,   ID_BT_TEST_MODE_LEN_ACK            = 6,
@@ -140,7 +141,8 @@ enum FrameIdEnum
     ID_READ_SYS_STATUS          = 0x30, ID_READ_SYS_STATUS_LEN          = 5,   ID_READ_SYS_STATUS_LEN_ACK         = 21,
     ID_BVD_TMPR_K               = 0x31, ID_BVD_TMPR_K_LEN               = 9,   ID_BVD_TMPR_K_LEN_ACK              = 9,
     ID_NEAR_RANGE_TAB           = 0x32, ID_NEAR_RANGE_TAB_LEN           = 20,  ID_NEAR_RANGE_TAB_LEN_ACK          = 20,
-    ID_DIST_CORR_PARA           = 0x33, ID_DIST_CORR_PARA_LEN           = 35,  ID_DIST_CORR_PARA_LEN_ACK          = 35,
+    ID_DIST_CORR_PARA           = 0x33, ID_DIST_CORR_PARA_LEN           = 31,  ID_DIST_CORR_PARA_LEN_ACK          = 31,
+    ID_BAUD_RATE                = 0x40, ID_BAUD_RATE_LEN                = 9,   ID_BAUD_RATE_LEN_ACK               = 9,
 };
 
 enum DataIdEnum
@@ -167,10 +169,10 @@ typedef enum
 typedef struct
 {
     int               vi4302_mode;
-    uint8_t           is_feet_detect;          // dummy
-    uint8_t           hardline_pin_sel;        // dummy
+    uint8_t           if_protocol;
+    uint8_t           output_format;
     uint8_t           is_ranging_enable;
-    uint8_t           hardline_pin_mode;       // dummy
+    uint8_t           i2c_slave_addr;          // 0x08 ~ 0x77
     int32_t           save_config_cnt;         // 保存配置指令计数
     int32_t           restore_default_cnt;     // 恢复出厂配置计数
     uint16_t          ld_trig_pwidth_100ps;    // laser triger pulse width, unit 0.1ns, 0.3ns-12.8ns
@@ -225,6 +227,7 @@ typedef struct
     uint16_t          peak_transition_zone[2]; // 大小信号的切换区间
     uint16_t          dist_transition_zone[2]; // 远近距离的切换区间
     int16_t           dist_tmpr_drift_para[2]; // 距离温漂参数，二次项系数和一次项系数，x1000
+    uint32_t          baud_rate;               // 串口波特率
 }SysConfigStruct;
 
 
@@ -282,6 +285,8 @@ public:
     void devBtReboot();
     void devBtFactoryReset();
     void devDistCorrPara(SysConfigStruct &config);
+    void devSetOutputFormat(int format);
+    void devSetBaudrate(int baudrate);
 
 private:
     uint8_t calSum(QByteArray data);

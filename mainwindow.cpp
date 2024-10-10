@@ -83,6 +83,12 @@ MainWindow::MainWindow(QWidget *parent)
    ui->comboBox_mode->addItem("Single Pixel Mode");
    ui->comboBox_mode->addItem("Histogram Mode");
 
+   ui->comboBox_outputFormat->addItem("Raw Data");
+   ui->comboBox_outputFormat->addItem("STD");
+   ui->comboBox_outputFormat->addItem("Ascii Demo");
+   ui->comboBox_outputFormat->addItem("Pix");
+   ui->comboBox_outputFormat->addItem("Ascii");
+
    ui->comboBox_hardlinePinSel->addItem("None");
    ui->comboBox_hardlinePinSel->addItem("UART TX");
    ui->comboBox_hardlinePinSel->addItem("LED1");
@@ -465,12 +471,12 @@ void MainWindow::dispDeviceConfig()
     printDeviceConfig(mDevConfigStruct);
 
     ui->lineEdit_sn->setText(QString::fromLatin1(mDevConfigStruct.sn, 16));
+    ui->lineEdit_changeBaudrate->setText(QString::number(mDevConfigStruct.baud_rate));
 
     ui->comboBox_jtxWorkMode->setCurrentIndex(mDevConfigStruct.jtx_work_mode);
     ui->comboBox_mode->setCurrentIndex(mDevConfigStruct.vi4302_mode);
+    ui->comboBox_outputFormat->setCurrentIndex(mDevConfigStruct.output_format);
 
-    ui->comboBox_hardlinePinSel->setCurrentIndex(mDevConfigStruct.hardline_pin_sel);
-    ui->comboBox_hardlinePinMode->setCurrentIndex(mDevConfigStruct.hardline_pin_mode);
     if(mDevConfigStruct.is_ranging_enable)
     {
         ui->checkBox_rangeEnable->setCheckState(Qt::Checked);
@@ -529,10 +535,10 @@ void MainWindow::printDeviceConfig(const SysConfigStruct &config)
 {
     qDebug() << "SysConfigStruct:";
     qDebug() << "  vi4302_mode:" << config.vi4302_mode;
-    qDebug() << "  is_feet_detect:" << static_cast<int>(config.is_feet_detect);
-    qDebug() << "  hardline_pin_sel:" << static_cast<int>(config.hardline_pin_sel);
+    qDebug() << "  if_protocol:" << static_cast<int>(config.if_protocol);
+    qDebug() << "  output_format:" << static_cast<int>(config.output_format);
     qDebug() << "  is_ranging_enable:" << static_cast<int>(config.is_ranging_enable);
-    qDebug() << "  hardline_pin_mode:" << static_cast<int>(config.hardline_pin_mode);
+    qDebug() << "  i2c_slave_addr:" << static_cast<int>(config.i2c_slave_addr);
     qDebug() << "  save_config_cnt:" << config.save_config_cnt;
     qDebug() << "  restore_default_cnt:" << config.restore_default_cnt;
     qDebug() << "  ld_trig_pwidth_100ps:" << config.ld_trig_pwidth_100ps;
@@ -597,6 +603,7 @@ void MainWindow::printDeviceConfig(const SysConfigStruct &config)
     qDebug() << "  peak_transition_zone:" << config.peak_transition_zone[0] << config.peak_transition_zone[1];
     qDebug() << "  dist_transition_zone:" << config.dist_transition_zone[0] << config.dist_transition_zone[1];
     qDebug() << "  dist_tmpr_drift_para:" << config.dist_tmpr_drift_para[0] << config.dist_tmpr_drift_para[1];
+
 }
 
 void MainWindow::on_pushButton_test_clicked()
@@ -622,6 +629,12 @@ void MainWindow::on_comboBox_mode_activated(int index)
     {
         m_chart->setTitle("直方图");
     }
+}
+
+
+void MainWindow::on_comboBox_outputFormat_activated(int index)
+{
+    m_serialPortReader.devSetOutputFormat(index);
 }
 
 
@@ -751,6 +764,13 @@ void MainWindow::on_pushButton_footDetectParaConfig_clicked()
 void MainWindow::on_pushButton_readConfig_clicked()
 {
     m_serialPortReader.devReadAllPara();
+}
+
+
+void MainWindow::on_pushButton_changeBaudrate_clicked()
+{
+    int baudrate = ui->lineEdit_changeBaudrate->text().toInt();
+    m_serialPortReader.devSetBaudrate(baudrate);
 }
 
 

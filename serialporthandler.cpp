@@ -349,6 +349,17 @@ void SerialPortHandler::handleData()
             m_fstream.flush();
         }
     }
+    else if(uint8_t(m_frameData[3])==0xA5)
+    {
+        // std data
+        m_rangeRawData.ctof         = uint8_t(m_frameData[4]) + (uint8_t(m_frameData[5])<<8) + (uint8_t(m_frameData[6])<<16);
+        m_rangeRawData.norm_peak    = uint8_t(m_frameData[7]) + (uint8_t(m_frameData[8])<<8);
+        m_rangeRawData.timestamp_ms = uint8_t(m_frameData[9]) + (uint8_t(m_frameData[10])<<8) + (uint8_t(m_frameData[11])<<16) + (uint8_t(m_frameData[12])<<24);
+        qDebug().noquote() <<   "ctof=" << QString("%1").arg(m_rangeRawData.ctof, 5) <<
+                                "peak=" << QString("%1").arg(m_rangeRawData.norm_peak, 9) <<
+                                "ts=" << QString("%1").arg(m_rangeRawData.timestamp_ms, 9);
+        emit sigProcDist(m_rangeRawData.ctof);
+    }
 
     if(m_isRecording)
     {
@@ -1090,4 +1101,35 @@ void SerialPortHandler::devDistCorrPara(SysConfigStruct &config)
     cmd[30] = calSum(cmd.mid(0,30));
     serialSendCmd(cmd);
 
+}
+
+void SerialPortHandler::devSetOutputFormat(int format)
+{
+    QByteArray cmd;
+    cmd.resize(6);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 6;
+    cmd[3] = ID_OUTPUT_FORMAT;
+    cmd[4] = format;
+    cmd[5] = calSum(cmd.mid(0,5));
+
+    serialSendCmd(cmd);
+}
+
+void SerialPortHandler::devSetBaudrate(int baudrate)
+{
+    QByteArray cmd;
+    cmd.resize(9);
+    cmd[0] = 0x8F;
+    cmd[1] = 0xD4;
+    cmd[2] = 9;
+    cmd[3] = ID_BAUD_RATE;
+    cmd[4] = (uint32_t)baudrate & 0xFF;
+    cmd[5] = ((uint32_t)baudrate>>8) & 0xFF;
+    cmd[6] = ((uint32_t)baudrate>>16) & 0xFF;
+    cmd[7] = ((uint32_t)baudrate>>24) & 0xFF;
+    cmd[8] = calSum(cmd.mid(0,8));
+
+    serialSendCmd(cmd);
 }

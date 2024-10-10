@@ -101,6 +101,10 @@ private slots:
 
     void on_pushButton_readAllRegVal_clicked();
 
+    void on_comboBox_outputFormat_activated(int index);
+
+    void on_pushButton_changeBaudrate_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
