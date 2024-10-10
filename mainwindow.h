@@ -112,6 +112,7 @@ private:
     QChart      *m_chart;
     QValueAxis  *m_axisX;
     QValueAxis  *m_axisY;
+    QVector<QPointF> m_distData;
 
     QStandardItemModel *m_tableModel;
 

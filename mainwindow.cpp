@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QThread>
+#include <QElapsedTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,17 +39,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_chart = new QChart();
     m_chart->addSeries(m_lineSeries);
-//    m_chart->createDefaultAxes();
-    m_chart->setTitle("直方图");
+    m_chart->setTitle("测距值(mm)");
     m_chart->legend()->setVisible(false);
 
     m_axisX = new QValueAxis;
     m_axisX->setTickCount(17);
+    m_axisX->setLabelFormat("%d");   // 强制显示整数标签
     m_chart->addAxis(m_axisX, Qt::AlignBottom);
     m_lineSeries->attachAxis(m_axisX);
 
     m_axisY = new QValueAxis;
     m_axisY->setTickCount(11);
+    m_axisY->setLabelFormat("%d");   // 强制显示整数标签
     m_chart->addAxis(m_axisY, Qt::AlignLeft);
     m_lineSeries->attachAxis(m_axisY);
 
@@ -287,7 +289,58 @@ void MainWindow::slotProcDist(int mm)
         ui->label_distStd->setText(QString::number(distStd));
     }
 
+    // 曲线
+    static QElapsedTimer timer;
+    static int idx = 0;
+    static int lastYaxisMin = 1000000;
+    static int lastYaxisMax = 0;
+    int xaxisRange = ui->lineEdit_xaxisRange->text().toInt();
+    m_distData.append(QPointF(idx++, mm));
+    if (m_distData.size() > xaxisRange)
+    {
+        m_distData.remove(0, m_distData.size() - xaxisRange);
+    }
 
+    if(ui->checkBox_autoYaxis->isChecked())
+    {
+        int distMin = 1000000;
+        int distMax = 0;
+        for(int i = 0; i < m_distData.size(); i++)
+        {
+            distMin = distMin > m_distData.at(i).y() ? m_distData.at(i).y() : distMin;
+            distMax = distMax < m_distData.at(i).y() ? m_distData.at(i).y() : distMax;
+        }
+
+        if(distMin < lastYaxisMin || distMin-lastYaxisMin > 500)
+        {
+            lastYaxisMin = distMin - 200;
+            lastYaxisMin = lastYaxisMin < 0 ? 0 : lastYaxisMin;
+        }
+        if(distMax > lastYaxisMax || (float)lastYaxisMax/(float)distMax > 1.5)
+        {
+            lastYaxisMax = distMax*1.2;
+        }
+    }
+    else
+    {
+        lastYaxisMin = ui->lineEdit_yaxisMin->text().toInt();
+        lastYaxisMax = ui->lineEdit_yaxisMax->text().toInt();
+    }
+
+    // 如果计时器还没有启动，启动它
+    if (!timer.isValid()) {
+        timer.start();  // 初次启动
+    }
+
+    // 40ms刷新一次曲线
+    if (timer.elapsed() >= 40)
+    {
+        m_lineSeries->replace(m_distData);
+        int xmin = idx-xaxisRange < 0 ? 0 : idx-xaxisRange;
+        slotSetAxisRange(xmin, idx-1, lastYaxisMin, lastYaxisMax);
+        // 重置计时器
+        timer.restart();
+    }
 }
 
 void MainWindow::showImg(int idx)
@@ -561,6 +614,14 @@ void MainWindow::on_comboBox_jtxWorkMode_activated(int index)
 void MainWindow::on_comboBox_mode_activated(int index)
 {
     m_serialPortReader.devSetVi4302Mode(index);
+    if(0==index)
+    {
+        m_chart->setTitle("测距值(mm)");
+    }
+    else if(2==index)
+    {
+        m_chart->setTitle("直方图");
+    }
 }
 
 
