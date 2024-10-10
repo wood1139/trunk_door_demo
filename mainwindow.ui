@@ -125,7 +125,7 @@
               <item row="1" column="1">
                <widget class="QLineEdit" name="lineEdit_baudrate">
                 <property name="text">
-                 <string>460800</string>
+                 <string>115200</string>
                 </property>
                </widget>
               </item>
@@ -154,9 +154,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>457</width>
-             <height>1402</height>
+             <y>-697</y>
+             <width>413</width>
+             <height>1285</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -570,24 +570,31 @@
                <item row="0" column="2">
                 <widget class="QLabel" name="label_18">
                  <property name="text">
-                  <string>寄存器值</string>
+                  <string>寄存器值 0x</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="3">
                 <widget class="QLineEdit" name="lineEdit_regVal"/>
                </item>
-               <item row="1" column="0" colspan="2">
-                <widget class="QPushButton" name="pushButton_readReg">
-                 <property name="text">
-                  <string>读寄存器</string>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="2" colspan="2">
                 <widget class="QPushButton" name="pushButton_writeReg">
                  <property name="text">
                   <string>写寄存器</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="4">
+                <widget class="QPushButton" name="pushButton_readAllRegVal">
+                 <property name="text">
+                  <string>读取所有寄存器值</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="2">
+                <widget class="QPushButton" name="pushButton_readReg">
+                 <property name="text">
+                  <string>读寄存器</string>
                  </property>
                 </widget>
                </item>
@@ -1051,7 +1058,7 @@
      <x>0</x>
      <y>0</y>
      <width>1325</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

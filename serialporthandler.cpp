@@ -511,7 +511,11 @@ void SerialPortHandler::handleError(QSerialPort::SerialPortError serialPortError
 
 void SerialPortHandler::serialSendCmd(QByteArray cmd)
 {
-    printHex(cmd);
+    if((uint8_t)cmd[3] != 0x0E)
+    {
+        printHex(cmd);
+    }
+
     if(m_serialPort.isOpen())
     {
         m_serialPort.write(cmd);

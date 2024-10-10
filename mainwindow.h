@@ -99,6 +99,8 @@ private slots:
 
     void on_pushButton_browseDistCorrParaFile_clicked();
 
+    void on_pushButton_readAllRegVal_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;

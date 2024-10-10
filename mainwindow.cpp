@@ -11,6 +11,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QThread>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -367,7 +368,8 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
         int reg_addr = uint8_t(frameData[4]) + (uint8_t(frameData[5])<<8);
         int reg_val = (uint8_t)frameData[6];
         ui->lineEdit_regAddr->setText(QString::number(reg_addr, 16));
-        ui->lineEdit_regVal->setText(QString::number(reg_val));
+        ui->lineEdit_regVal->setText(QString::number(reg_val, 16));
+        qDebug() << QString::number(reg_addr, 16) << ":" << QString::number(reg_val, 16);
     }
     else if(uint8_t(frameData[3])==ID_XTALK_CALIB)
     {
@@ -748,7 +750,7 @@ void MainWindow::on_pushButton_readReg_clicked()
     int reg_addr = ui->lineEdit_regAddr->text().toInt(&ok, 16);
     ui->lineEdit_regVal->setText("");
     m_serialPortReader.devReadReg(reg_addr);
-    qDebug() << "read reg: addr = " << reg_addr;
+//    qDebug() << "read reg: addr = " << reg_addr;
 }
 
 
@@ -756,7 +758,7 @@ void MainWindow::on_pushButton_writeReg_clicked()
 {
     bool ok;
     int reg_addr = ui->lineEdit_regAddr->text().toInt(&ok, 16);
-    int reg_val = ui->lineEdit_regVal->text().toInt();
+    int reg_val = ui->lineEdit_regVal->text().toInt(&ok, 16);
     m_serialPortReader.devWriteReg(reg_addr, reg_val);
     qDebug() << "write reg: addr = " << reg_addr << "val = " << reg_val;
 }
@@ -980,5 +982,15 @@ void MainWindow::on_pushButton_browseDistCorrParaFile_clicked()
                                                     filter);           // 文件过滤器
 
     ui->lineEdit_distCorrParaFilePath->setText(fileName);
+}
+
+
+void MainWindow::on_pushButton_readAllRegVal_clicked()
+{
+    for(int reg_addr = 0; reg_addr < 0x400; reg_addr++)
+    {
+        m_serialPortReader.devReadReg(reg_addr);
+        QThread::msleep(20);
+    }
 }
 
