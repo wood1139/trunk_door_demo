@@ -105,6 +105,8 @@ private slots:
 
     void on_pushButton_changeBaudrate_clicked();
 
+    void on_pushButton_clearCurve_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
@@ -117,6 +119,7 @@ private:
     QValueAxis  *m_axisX;
     QValueAxis  *m_axisY;
     QVector<QPointF> m_distData;
+    int          m_clearCurveFlag;
 
     QStandardItemModel *m_tableModel;
 

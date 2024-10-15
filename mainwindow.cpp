@@ -296,11 +296,21 @@ void MainWindow::slotProcDist(int mm)
     }
 
     // 曲线
+    if(!ui->checkBox_showCurve->isChecked())
+    {
+        return;
+    }
     static QElapsedTimer timer;
     static int idx = 0;
     static int lastYaxisMin = 1000000;
     static int lastYaxisMax = 0;
     int xaxisRange = ui->lineEdit_xaxisRange->text().toInt();
+    if(m_clearCurveFlag)
+    {
+        m_clearCurveFlag = 0;
+        idx = 0;
+        m_distData.clear();
+    }
     m_distData.append(QPointF(idx++, mm));
     if (m_distData.size() > xaxisRange)
     {
@@ -1073,5 +1083,11 @@ void MainWindow::on_pushButton_readAllRegVal_clicked()
         m_serialPortReader.devReadReg(reg_addr);
         QThread::msleep(20);
     }
+}
+
+
+void MainWindow::on_pushButton_clearCurve_clicked()
+{
+    m_clearCurveFlag = 1;
 }
 
