@@ -1042,11 +1042,23 @@ void MainWindow::on_pushButton_writeDistCorrParaFile_clicked()
                 }
             }
 
-            // 补充一些固定值
-            config.peak_transition_zone[0] = 100;
-            config.peak_transition_zone[1] = 120;
-            config.dist_transition_zone[0] = 2000;
-            config.dist_transition_zone[1] = 2500;
+            // 读取 peakTransitionZone
+            if (jsonObj.contains("peakTransitionZone") && jsonObj["peakTransitionZone"].isArray()) {
+                QJsonArray peakTransitionZoneArray = jsonObj["peakTransitionZone"].toArray();
+                for (int i = 0; i < peakTransitionZoneArray.size(); ++i) {
+                    config.peak_transition_zone[i] = peakTransitionZoneArray[i].toInt();
+                    qDebug() << "peakTransitionZone[" << i << "]:" << peakTransitionZoneArray[i].toInt();
+                }
+            }
+
+            // 读取 distTransitionZone
+            if (jsonObj.contains("distTransitionZone") && jsonObj["distTransitionZone"].isArray()) {
+                QJsonArray distTransitionZoneArray = jsonObj["distTransitionZone"].toArray();
+                for (int i = 0; i < distTransitionZoneArray.size(); ++i) {
+                    config.dist_transition_zone[i] = distTransitionZoneArray[i].toInt();
+                    qDebug() << "distTransitionZone[" << i << "]:" << distTransitionZoneArray[i].toInt();
+                }
+            }
 
             printDeviceConfig(config);
 
