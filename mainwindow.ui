@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TOF调测工具V2.6.0</string>
+   <string>TOF调测工具V2.6.1</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -56,8 +56,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>391</width>
-             <height>1493</height>
+             <width>413</width>
+             <height>1339</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -1161,7 +1161,7 @@
      <x>0</x>
      <y>0</y>
      <width>1325</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

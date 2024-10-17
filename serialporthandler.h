@@ -295,6 +295,7 @@ private:
     void dataForFrameSearch(QByteArray rawData);
     void linPortWrite(QByteArray cmd);
     void printHex(QByteArray cmd);
+    float cal3PointCenter(int a, int b, int c);
 
 private slots:
     void handleReadyRead();

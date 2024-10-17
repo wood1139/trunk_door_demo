@@ -256,13 +256,14 @@ void SerialPortHandler::handleData()
     }
     else if(uint8_t(m_frameData[3])==0xA2)
     {// sigle pixel data
-        double sumWeight = 0.0;
-        double sumX = 0.0;
-        double sumY = 0.0;
 
+        int tabVal[5][5] = {0};  // 仅用于光斑中心计算
+
+        // 显示数值和颜色
         for (int row = 0; row < 5; ++row) {
             for (int column = 0; column < 5; ++column) {
                 uint16_t val = uint8_t(m_frameData[4+row*10+column*2]) + (uint8_t(m_frameData[5+row*10+column*2])<<8);
+                tabVal[row][column] = val;
                 QStandardItem *item = new QStandardItem(QString::number(val));
                 // 根据数值设置颜色，2200最红，0最蓝
                 qreal ck = (qreal)val/2200.0;
@@ -275,13 +276,6 @@ void SerialPortHandler::handleData()
                 item->setTextAlignment(Qt::AlignCenter);
                 m_tableModelPtr->setItem(row, column, item);
 
-                if(row!=0 && row!=4 && column!=0 && column!=4)
-                {
-                    sumWeight += val;      // 累计总权重
-                    sumX += val * row;     // 按权重累计X坐标
-                    sumY += val * column;  // 按权重累计Y坐标
-                }
-
                 if(m_isRecording && m_frameCnt>=0)
                 {
                     m_fstream << val << ",";
@@ -293,9 +287,55 @@ void SerialPortHandler::handleData()
             m_fstream << "\n";
         }
 
-        // 计算加权平均后的中心点坐标
-        double xCentroid = sumX / sumWeight / 4;
-        double yCentroid = sumY / sumWeight / 4;
+        // 计算光斑中心
+        double xCentroid = 0.5;
+        double yCentroid = 0.5;
+        // 首先填充4个角的衰减像素值，使用其相邻的2个像素中数值较大的一个替换
+        tabVal[0][0] = tabVal[0][1] > tabVal[1][0] ? tabVal[0][1] : tabVal[1][0];
+        tabVal[0][4] = tabVal[0][3] > tabVal[1][4] ? tabVal[0][3] : tabVal[1][4];
+        tabVal[4][0] = tabVal[3][0] > tabVal[4][1] ? tabVal[3][0] : tabVal[4][1];
+        tabVal[4][4] = tabVal[3][4] > tabVal[4][3] ? tabVal[3][4] : tabVal[4][3];
+        // 寻找最大值的位置
+        int rowIdxMax = 0;
+        int colIdxMax = 0;
+        int maxVal = 0;
+        for (int row = 0; row < 5; ++row) {
+            for (int column = 0; column < 5; ++column) {
+                if(tabVal[row][column]>maxVal) {
+                    maxVal = tabVal[row][column];
+                    rowIdxMax = row;
+                    colIdxMax = column;
+                }
+            }
+        }
+        if(rowIdxMax==0)
+        {
+            yCentroid = 0;
+        }
+        else if(rowIdxMax==4)
+        {
+            yCentroid = 1;
+        }
+        else
+        {
+            float k = cal3PointCenter(tabVal[rowIdxMax-1][colIdxMax], tabVal[rowIdxMax][colIdxMax], tabVal[rowIdxMax+1][colIdxMax]);
+            yCentroid = 0.1 + 0.2*rowIdxMax + 0.1*k;
+        }
+
+        if(colIdxMax==0)
+        {
+            xCentroid = 0;
+        }
+        else if(colIdxMax==4)
+        {
+            xCentroid = 1;
+        }
+        else
+        {
+            float k = cal3PointCenter(tabVal[rowIdxMax][colIdxMax-1], tabVal[rowIdxMax][colIdxMax], tabVal[rowIdxMax][colIdxMax+1]);
+            xCentroid = 0.1 + 0.2*colIdxMax + 0.1*k;
+        }
+
         emit sigSetCenterMarkerPosition(xCentroid, yCentroid);
     }
     else if(uint8_t(m_frameData[3])==0xA3)
@@ -371,6 +411,53 @@ void SerialPortHandler::handleData()
             scheduleRecord();
         }
     }
+}
+
+// 根据中心最大值和相邻的2个值，计算实际光斑中心在最大值像素的位置，范围[-1 1]，即-1为第1边界，0为中心，1为第2边界
+// 定义：b为最大像素值，a为前1像素值，c为后1像素值
+//      a所在像素中心坐标为-2，b所在像素中心坐标为0，c所在像素中心坐标为2
+//      则b像素前边界坐标为-1，后边界坐标为1
+// 思路：先用最大值b和最小值，计算一条直线，斜率为k
+//      斜率为-k，过中间值点的直线，与上一条直线的交点横坐标，就是要得到的结果
+float SerialPortHandler::cal3PointCenter(int a, int b, int c)
+{
+    float x0,x1,x2,y0,y1,y2;
+    x0 = 0;
+    y0 = b;
+    if(a < c)
+    {
+        x1 = -2;
+        x2 = 2;
+        y1 = a;
+        y2 = c;
+    }
+    else
+    {
+        x1 = 2;
+        x2 = -2;
+        y1 = c;
+        y2 = a;
+    }
+
+    // 计算过(x0,y0)和(x1,y1)的直线
+    float linek1 = (y1-y0)/(x1-x0);
+    float lineb1 = y0-linek1*x0;
+
+    float linek2 = -linek1;
+    float lineb2 = y2 - linek2*x2;
+
+    float resx = 0;
+
+    if(abs(linek1-linek2) < 0.00001) // abc几乎相等
+    {
+        resx = 0;
+    }
+    else
+    {
+        resx = (lineb2-lineb1)/(linek1-linek2);
+    }
+
+    return resx;
 }
 
 void SerialPortHandler::stopRecord()
