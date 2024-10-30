@@ -122,6 +122,9 @@ private:
     int          m_clearCurveFlag;
 
     QStandardItemModel *m_tableModel;
+    QLabel *m_labelPixCenterPoint;
+    QLabel *m_labelPixCircle;
+    void pixCenterMarkerInit();
 
     uint8_t mParaBuf[1024];
     SysConfigStruct mDevConfigStruct;
@@ -131,11 +134,6 @@ private:
 
     void dispDeviceConfig();
     void printDeviceConfig(const SysConfigStruct &config);
-
-    QLabel *m_labelPixCenterPoint;
-    QLabel *m_labelPixCircle;
-    void pixCenterMarkerInit();
-    void pixCenterMarkerPosition(qreal xRatio, qreal yRatio);
 
 public slots:
     void slotHandleLidarData(QByteArray frameData);

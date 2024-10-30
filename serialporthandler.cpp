@@ -246,6 +246,10 @@ void SerialPortHandler::handleData()
                         m_fstream << m_histData[i].x() << "," << m_histData[i].y() << ",\n";
                     }
                 }
+                if(m_isRecording)
+                {
+                    m_frameCnt++;
+                }
             }
         }
         else
@@ -285,6 +289,10 @@ void SerialPortHandler::handleData()
         if(m_isRecording && m_frameCnt>=0)
         {
             m_fstream << "\n";
+        }
+        if(m_isRecording)
+        {
+            m_frameCnt++;
         }
 
         // 计算光斑中心
@@ -388,6 +396,10 @@ void SerialPortHandler::handleData()
                          m_rangeRawData.xtalk_count << ",\n";
             m_fstream.flush();
         }
+        if(m_isRecording)
+        {
+            m_frameCnt++;
+        }
     }
     else if(uint8_t(m_frameData[3])==0xA5)
     {
@@ -403,7 +415,6 @@ void SerialPortHandler::handleData()
 
     if(m_isRecording)
     {
-        m_frameCnt++;
         if(m_frameNum > 0 && m_frameCnt >= m_frameNum)
         {
             m_isRecording = false;
