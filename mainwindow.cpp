@@ -448,7 +448,7 @@ void MainWindow::slotHandleLidarData(QByteArray frameData)
         }
         else
         {
-            ui->label_xtalkCalibRes->setText("标定结果: 失败");
+            ui->label_xtalkCalibRes->setText("标定结果: 失败，错误代码" + QString::number(static_cast<unsigned char>(frameData[4])));
         }
 
         int VI530x_Cali_CG_Pos = (int8_t)frameData[5];
@@ -504,7 +504,7 @@ void MainWindow::dispDeviceConfig()
     ui->lineEdit_footThMaxMm->setText(QString::number(mDevConfigStruct.valid_foot_th_max_mm));
     ui->lineEdit_dataWinSize->setText(QString::number(mDevConfigStruct.data_win_size));
     ui->lineEdit_footInHoldMaxTimes->setText(QString::number(mDevConfigStruct.foot_in_hold_max_times));
-    ui->lineEdit_walkErrK->setText(QString::number(mDevConfigStruct.walk_err_k));
+    ui->lineEdit_walkErrK->setText(QString::number(mDevConfigStruct.dist_linear_k));
     ui->lineEdit_distOffset->setText(QString::number(mDevConfigStruct.dist_offset_mm));
     ui->lineEdit_dirtyDistTh->setText(QString::number(mDevConfigStruct.dirty_dist_th_mm));
     ui->lineEdit_lowPeakTh->setText(QString::number(mDevConfigStruct.low_peak_th));
@@ -559,7 +559,7 @@ void MainWindow::printDeviceConfig(const SysConfigStruct &config)
     qDebug() << "  valid_foot_th_min_mm:" << config.valid_foot_th_min_mm;
     qDebug() << "  valid_foot_th_max_mm:" << config.valid_foot_th_max_mm;
     qDebug() << "  data_win_size:" << config.data_win_size;
-    qDebug() << "  walk_err_k:" << config.walk_err_k;
+    qDebug() << "  dist_linear_k:" << config.dist_linear_k;
     qDebug() << "  dist_offset_mm:" << config.dist_offset_mm;
     qDebug() << "  low_peak_th:" << config.low_peak_th;
     qDebug() << "  dirty_dist_th_mm:" << static_cast<int>(config.dirty_dist_th_mm);
@@ -787,8 +787,8 @@ void MainWindow::on_pushButton_changeBaudrate_clicked()
 void MainWindow::on_pushButton_walkErrK_clicked()
 {
     int k = ui->lineEdit_walkErrK->text().toInt();
-    qDebug() << "walk err k=" << k;
-    m_serialPortReader.devSetWalkErrK(k);
+    qDebug() << "dist linear k=" << k;
+    m_serialPortReader.devSetDistLinearK(k);
 }
 
 

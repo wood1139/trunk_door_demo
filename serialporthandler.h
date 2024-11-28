@@ -106,7 +106,7 @@ enum FrameIdEnum
     ID_SAMPLE_RATE              = 0x06, ID_SAMPLE_RATE_LEN              = 7,   ID_SAMPLE_RATE_LEN_ACK             = 7,
     ID_LD_TRIG_PWIDTH           = 0x07, ID_LD_TRIG_PWIDTH_LEN           = 7,   ID_LD_TRIG_PWIDTH_LEN_ACK          = 7,
     ID_FOOT_DETECT_PARA         = 0x08, ID_FOOT_DETECT_PARA_LEN         = 21,  ID_FOOT_DETECT_PARA_LEN_ACK        = 21,
-    ID_WALK_ERR_K               = 0x09, ID_WALK_ERR_K_LEN               = 7,   ID_WALK_ERR_K_LEN_ACK              = 7,
+    ID_DIST_LINEAR_K            = 0x09, ID_DIST_LINEAR_K_LEN            = 7,   ID_DIST_LINEAR_K_LEN_ACK           = 7,
     ID_DIST_OFFSET              = 0x0A, ID_DIST_OFFSET_LEN              = 7,   ID_DIST_OFFSET_LEN_ACK             = 7,
     ID_LOW_PEAK_TH              = 0x0B, ID_LOW_PEAK_TH_LEN              = 7,   ID_LOW_PEAK_TH_LEN_ACK             = 7,
     ID_DIRTY_TH                 = 0x0C, ID_DIRTY_TH_LEN                 = 10,  ID_DIRTY_TH_LEN_ACK                = 10,
@@ -183,7 +183,7 @@ typedef struct
     uint16_t          valid_foot_th_min_mm;    // dummy 识别脚的最小高度阈值
     uint16_t          valid_foot_th_max_mm;    // dummy 识别脚的最大高度阈值
     uint16_t          data_win_size;           // dummy 用于判定的数据长度
-    uint16_t          walk_err_k;              // dummy
+    int16_t           dist_linear_k;           //
     int16_t           dist_offset_mm;          // 距离偏置
     uint16_t          low_peak_th;             // 当atten_peak小于low_peak_th时，认为测距无效
     uint8_t           dirty_dist_th_mm;        // 当测距值小于dirty_dist_th_mm时，判断近距离遮挡或脏污
@@ -264,7 +264,7 @@ public:
     void devReadAllPara();
     void devSetJtxWorkMode(int mode);
     void devWriteSn(char sn[16]);
-    void devSetWalkErrK(int k);
+    void devSetDistLinearK(int k);
     void devSetDistOffset(int offset);
     void devSetLowPeakTh(int th);
     void devSetDirtyTh(int dist_th, int xtalk_th);

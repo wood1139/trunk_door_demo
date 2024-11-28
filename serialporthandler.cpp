@@ -840,16 +840,16 @@ void SerialPortHandler::devWriteSn(char sn[16])
     serialSendCmd(cmd);
 }
 
-void SerialPortHandler::devSetWalkErrK(int k)
+void SerialPortHandler::devSetDistLinearK(int k)
 {
     QByteArray cmd;
     cmd.resize(7);
     cmd[0] = 0x8F;
     cmd[1] = 0xD4;
     cmd[2] = 7;
-    cmd[3] = ID_WALK_ERR_K;
-    cmd[4] = (uint16_t)k & 0xFF;
-    cmd[5] = ((uint16_t)k>>8) & 0xFF;
+    cmd[3] = ID_DIST_LINEAR_K;
+    cmd[4] = (int16_t)k & 0xFF;
+    cmd[5] = ((int16_t)k>>8) & 0xFF;
     cmd[6] = calSum(cmd.mid(0,6));
 
     serialSendCmd(cmd);
