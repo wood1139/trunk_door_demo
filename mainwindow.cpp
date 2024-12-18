@@ -506,6 +506,8 @@ void MainWindow::dispDeviceConfig()
     ui->lineEdit_footInHoldMaxTimes->setText(QString::number(mDevConfigStruct.foot_in_hold_max_times));
     ui->lineEdit_walkErrK->setText(QString::number(mDevConfigStruct.dist_linear_k));
     ui->lineEdit_distOffset->setText(QString::number(mDevConfigStruct.dist_offset_mm));
+    ui->label_walkErrK->setText("线性误差系数: " + QString::number(mDevConfigStruct.dist_linear_k));
+    ui->label_distOffset->setText("距离偏置mm: " + QString::number(mDevConfigStruct.dist_offset_mm));
     ui->lineEdit_dirtyDistTh->setText(QString::number(mDevConfigStruct.dirty_dist_th_mm));
     ui->lineEdit_lowPeakTh->setText(QString::number(mDevConfigStruct.low_peak_th));
     ui->lineEdit_ldTrigNum->setText(QString::number(mDevConfigStruct.spad_int_num));
@@ -1101,5 +1103,34 @@ void MainWindow::on_pushButton_readAllRegVal_clicked()
 void MainWindow::on_pushButton_clearCurve_clicked()
 {
     m_clearCurveFlag = 1;
+}
+
+
+void MainWindow::on_pushButton_linearCalib_clicked()
+{
+    int realdist1 = ui->lineEdit_linearCalibRealdist1->text().toInt();
+    int realdist2 = ui->lineEdit_linearCalibRealdist2->text().toInt();
+    int dist1 = ui->lineEdit_linearCalibDist1->text().toInt();
+    int dist2 = ui->lineEdit_linearCalibDist2->text().toInt();
+
+    if(realdist1*realdist2*dist1*dist2 ==0)
+    {
+        ui->label_walkErrK->setText("线性误差系数: ");
+        ui->label_distOffset->setText("距离偏置mm: ");
+    }
+    else
+    {
+        int k = 10000 * (realdist2-realdist1) / (dist2-dist1);
+        int b = realdist1 - k*dist1/10000;
+        b = -b;  // 下位机中是y=kx-b;
+
+        ui->label_walkErrK->setText("线性误差系数: " + QString::number(k));
+        ui->label_distOffset->setText("距离偏置mm: " + QString::number(b));
+        ui->lineEdit_walkErrK->setText(QString::number(k));
+        ui->lineEdit_distOffset->setText(QString::number(b));
+
+        m_serialPortReader.devSetDistLinearK(k);
+        m_serialPortReader.devSetDistOffset(b);
+    }
 }
 

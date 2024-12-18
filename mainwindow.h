@@ -107,6 +107,8 @@ private slots:
 
     void on_pushButton_clearCurve_clicked();
 
+    void on_pushButton_linearCalib_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serialPort;
